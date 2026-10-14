@@ -1,0 +1,53 @@
+# Sistema de Controle de Inventário
+
+Sistema web para uma escola controlar o inventário de **insumos**, **ferramentas** e **máquinas**. Professores solicitam a retirada de itens; administradores aprovam, registram a retirada e a devolução.
+
+## Fluxo principal
+
+```
+Professor solicita → Sistema valida disponibilidade → Admin aprova → Retirada → Devolução
+```
+
+## Perfis
+
+| Perfil | Pode |
+|---|---|
+| **Administrador** | Aprovar/recusar, registrar retirada e devolução, gerir itens, tipos, locais e usuários, ver relatórios e auditoria |
+| **Solicitante** (professor) | Consultar o catálogo, montar o carrinho, solicitar retiradas e acompanhar as próprias solicitações |
+
+## Tecnologias
+
+- **Banco e autenticação:** Supabase (Postgres, Auth, RLS)
+- **Regras de negócio:** funções RPC em Postgres
+- **Front-end:** React, TypeScript, Vite, TanStack Query, React Hook Form, Zod, Tailwind
+
+## Como o projeto é conduzido
+
+O projeto usa **Spec Driven Development**: a especificação vem antes do código.
+
+- [`specs/constitution.md`](specs/constitution.md): princípios do projeto
+- `specs/NNN-nome/spec.md`: requisitos e critérios de aceite de cada funcionalidade
+- [`CLAUDE.md`](CLAUDE.md): convenções e instruções para trabalhar com o Claude Code
+
+## Como rodar
+
+Pré-requisitos: Node.js (LTS), Docker e Supabase CLI.
+
+```bash
+# Banco local
+supabase start
+supabase db reset        # aplica migrations e seed
+supabase test db         # roda os testes do banco
+
+# Front-end
+cd web
+npm install
+cp .env.example .env.local   # preencha com a URL e a chave anon do Supabase local
+npm run dev
+```
+
+> A pasta `supabase/` e a pasta `web/` ainda serão criadas nas próximas etapas.
+
+## Status
+
+Em fase inicial: constituição e specs 001 a 005 escritas; migrations e front-end em andamento.

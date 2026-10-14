@@ -1,0 +1,158 @@
+# CLAUDE.md — Sistema de Controle de Inventário
+
+Sistema web para uma única escola controlar o inventário de **insumos**, **ferramentas** e **máquinas**. Professores solicitam retiradas; administradores aprovam e entregam.
+
+## Fonte da verdade (SDD)
+
+Este projeto segue **Spec Driven Development**. Antes de qualquer trabalho:
+
+1. Leia `specs/constitution.md` (princípios inegociáveis).
+2. Leia a `spec.md` da feature em questão (`specs/NNN-nome/spec.md`).
+
+Regras:
+- **Se o comportamento muda, a spec muda primeiro.** Nunca implemente algo que contrarie a spec ou a constituição; proponha a alteração na spec antes.
+- Uma spec = uma branch/PR.
+- Não invente funcionalidades. O que está em "Fora de escopo" não deve ser implementado.
+- Itens `OPEN-xx` são decisões pendentes: **pergunte ao usuário**, não decida sozinho.
+- Cite os IDs (`RF-xx`, `CA-xx`, `spec-004/RF-03`) em commits, testes e PRs.
+- Decisões técnicas ("como") vão em `plan.md`; tarefas em `tasks.md`, na pasta da feature.
+
+## Stack
+
+| Camada | Tecnologia |
+|---|---|
+| Banco / Auth | Supabase (Postgres + Auth + RLS) |
+| Regras de negócio | Funções RPC em Postgres (PL/pgSQL) |
+| Front-end | React + TypeScript + Vite (pasta `web/`) |
+| Dados do servidor | TanStack Query |
+| Formulários | React Hook Form + Zod |
+| UI | Tailwind + shadcn/ui |
+| Rotas | React Router |
+| Testes banco | pgTAP (`supabase test db`) |
+| Testes front | Vitest + Testing Library; Playwright para E2E |
+
+## Estrutura do repositório
+
+```
+specs/                 # constituição e specs por feature (fonte da verdade)
+supabase/
+├─ migrations/         # SQL versionado (uma ou mais por feature)
+├─ tests/              # testes pgTAP, nomeados por spec/CA
+├─ seed.sql            # dados de exemplo para desenvolvimento
+└─ config.toml
+web/
+└─ src/
+   ├─ app/             # providers, router, layout raiz
+   ├─ features/<nome>/ # components, hooks, api, schemas, types
+   ├─ shared/          # UI e utilitários genéricos
+   ├─ lib/             # cliente Supabase, queryClient
+   └─ types/           # tipos gerados do banco
+```
+
+## Regras de arquitetura (resumo da constituição)
+
+- **Estoque só muda via RPC.** Nunca faça `update` direto em `quantidade_total`, `quantidade_reservada` ou `quantidade_em_uso` pelo front (P-01).
+- **RLS em toda tabela.** Esconder tela não é segurança (P-02).
+- **Invariante:** `quantidade_reservada + quantidade_em_uso <= quantidade_total`, garantida por `CHECK` (P-03).
+- **Concorrência:** funções de estoque usam `SELECT ... FOR UPDATE` nos itens envolvidos (P-04).
+- **Toda movimentação** de estoque grava em `movimentacao` (imutável) (P-05).
+- **Auditoria por trigger** em `item`, `tipo_item`, `local` e `profiles` (perfil/status); ninguém edita ou apaga auditoria (P-06).
+- O usuário **não altera o próprio** `perfil` nem `status` (P-07). Nunca ficar sem admin ativo (P-08).
+- Funções `SECURITY DEFINER` devem fixar `search_path` e checar perfil/status do `auth.uid()` dentro da própria função.
+
+### Modelo de estoque
+
+`disponível = total − reservada − em_uso`
+
+| Evento | Efeito |
+|---|---|
+| Aprovar | `reservada += aprovada` |
+| Retirar insumo | `reservada -= q`, `total -= q` |
+| Retirar ferramenta/máquina | `reservada -= q`, `em_uso += q` |
+| Devolver | `em_uso -= q` |
+| Cancelar/recusar solicitação aprovada | `reservada -= aprovada` |
+
+### Status da solicitação
+
+`pendente → aprovada → retirada → concluida`; alternativas: `cancelada`, `recusada`.
+
+## Convenções
+
+### Banco
+- Nomes de tabelas e colunas em **português, snake_case, singular** (`item`, `solicitacao_item`, `quantidade_total`).
+- Migrations: uma por mudança lógica, nome descritivo (`supabase migration new nome`). **Nunca altere o banco pelo painel**; nunca edite migration já aplicada em produção, crie uma nova.
+- Todo objeto novo: tabela com RLS habilitado e políticas explícitas, constraints no banco (não só no front), índices para chaves estrangeiras usadas em filtros.
+- Funções RPC: nome em verbo (`aprovar_solicitacao`), retornam erros com mensagens claras em português para o front exibir.
+- Depois de mudar o schema: `supabase gen types typescript --local > web/src/types/database.ts`.
+
+### Front-end
+- TypeScript estrito; sem `any` sem justificativa.
+- **Só a camada `api` de cada feature acessa o cliente Supabase.** Componentes usam hooks (`useItens`, `useAprovarSolicitacao`).
+- Cada feature expõe só o necessário; evite importar entre features, use `shared/`.
+- Validação de formulário com Zod; mensagens de erro e textos da interface em **português do Brasil**.
+- Carrinho vive em estado local (persistido no navegador); só a solicitação enviada vai ao banco.
+- Validações no front são conveniência; a validação real está no banco.
+- Componentes pequenos, nomes em inglês ou português de forma **consistente** com o código já existente (decisão do projeto: código e identificadores de domínio em português; termos técnicos de React/TS em inglês).
+
+### Git
+- Branches: `spec-NNN-nome` ou `feat/…`, `fix/…`. Nunca commitar direto na `main`.
+- Commits pequenos, no padrão Conventional Commits em português, citando a spec: `feat(spec-004): aprovar_solicitacao com reserva (RF-04, CA-01)`.
+- Nunca commitar `.env*`, chaves, senhas ou dumps com dados reais.
+
+## Qualidade e testes
+
+- Toda regra de negócio tem teste automatizado referenciando um `CA-xx` (Q-01). Nomeie o teste com o ID: `CA-03: aprovações simultâneas não reservam em dobro`.
+- Funções RPC e políticas RLS são testadas no banco com pgTAP (Q-02). Teste sempre o caminho **negado** (usuário comum, pendente, inativo), não só o feliz.
+- Concorrência de estoque precisa de teste com duas transações simultâneas.
+- CI: ESLint, Prettier, `tsc --noEmit`, testes do front e `supabase test db` (Q-03).
+- Fluxo principal tem E2E: solicitar → aprovar → retirar → devolver (Q-04).
+- Uma tarefa só está pronta quando os testes passam e a spec reflete o que foi entregue.
+
+## Comandos
+
+```bash
+# Banco (Supabase local, requer Docker)
+supabase start                      # sobe o ambiente local
+supabase db reset                   # recria o banco: migrations + seed
+supabase test db                    # roda testes pgTAP
+supabase migration new <nome>       # nova migration
+supabase gen types typescript --local > web/src/types/database.ts
+
+# Front (dentro de web/)
+npm install
+npm run dev
+npm run lint
+npm run typecheck                   # tsc --noEmit
+npm run test                        # Vitest
+npm run test:e2e                    # Playwright
+```
+
+> Ajuste os nomes dos scripts acima se o `package.json` usar outros.
+
+## Segurança
+
+- No front, **apenas a chave pública (anon)** do Supabase. A `service_role` nunca vai para o front nem para o Git.
+- Variáveis de ambiente em `.env.local` (ignorado pelo Git); mantenha um `.env.example` sem segredos.
+- O primeiro administrador é criado manualmente (SQL/seed); o resto da gestão de perfis é pela própria aplicação.
+- Antes de concluir uma feature, tente acessar dados de outro usuário com token comum para validar o RLS.
+
+## Como trabalhar neste projeto (instruções para o Claude)
+
+1. Antes de implementar, identifique a spec e os `RF`/`CA` envolvidos; se não existirem, pare e proponha a spec.
+2. Siga a ordem: **testes → migration/código → rodar testes → atualizar spec/tasks**.
+3. Banco antes do front: não construa tela para uma regra que ainda não está no banco.
+4. Prefira mudanças pequenas e revisáveis; não refatore código fora do escopo da tarefa.
+5. Se uma regra nova surgir durante o trabalho, **registre na spec** (ou como `OPEN-xx`) em vez de decidir silenciosamente.
+6. Ao terminar, resuma: o que mudou, quais `CA-xx` foram cobertos, o que ficou pendente.
+7. Nunca execute comandos destrutivos (`db reset` em produção, `drop`, `git push --force`) sem confirmação explícita.
+
+## Fora de escopo (versão inicial)
+
+Prazo de devolução e controle de atraso · multi-escola · app móvel nativo · QR code · notificação por e-mail (extra futuro).
+
+## Decisões pendentes
+
+Consulte os `OPEN-xx` em cada `spec.md`. Principais:
+- Modelo de entrada de usuários (spec 001, OPEN-01).
+- Expiração de reserva não retirada (spec 004, OPEN-02).
+- Devolução parcial danificada de item com várias unidades (spec 005, OPEN-02).
