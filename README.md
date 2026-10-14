@@ -31,7 +31,7 @@ O projeto usa **Spec Driven Development**: a especificação vem antes do códig
 
 ## Como rodar
 
-Pré-requisitos: Node.js (LTS), Docker e Supabase CLI.
+Pré-requisitos: Node.js 24 (`nvm use`, ver `.nvmrc`) e Docker. A Supabase CLI já vem como dependência de desenvolvimento em `web/` (use `npx supabase ... --workdir ..` de dentro de `web/`, ou instale a CLI globalmente).
 
 ```bash
 # Banco local
@@ -46,7 +46,7 @@ cp .env.example .env.local   # preencha com a URL e a chave anon do Supabase loc
 npm run dev
 ```
 
-> A pasta `supabase/` e a pasta `web/` ainda serão criadas nas próximas etapas.
+Verificações do front (dentro de `web/`): `npm run lint`, `npm run format:check`, `npm run typecheck`, `npm run test`, `npm run test:e2e`. Tipos do banco: `npm run db:types`.
 
 ## Status
 

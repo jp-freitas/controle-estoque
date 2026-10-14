@@ -1,0 +1,2 @@
+-- Dados de exemplo para desenvolvimento local (aplicados por `supabase db reset`).
+-- Nunca coloque dados reais aqui.
