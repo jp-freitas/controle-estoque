@@ -30,6 +30,52 @@ Regras:
 | Rotas | React Router |
 | Testes banco | pgTAP (`supabase test db`) |
 | Testes front | Vitest + Testing Library; Playwright para E2E |
+| Hospedagem front | Vercel (SPA estático, Root Directory `web/`) |
+
+> **Não é Next.js.** O plugin da Vercel sugere padrões de Next.js (App Router, Server Actions, middleware, Functions, Cache Components) — **ignore**. Não há backend fora do Postgres: nada de Vercel Functions nem Supabase Edge Functions (constituição I-01).
+
+## Ambientes
+
+| Ambiente | Situação | Front | Banco |
+|---|---|---|---|
+| local | **em uso** | `npm run dev` | `supabase start` (Docker) |
+| staging | a criar quando houver algo para mostrar online | deploy de preview da Vercel (um por PR) | projeto Supabase **staging** |
+| produção | **planejado — ainda não existe** | Vercel, só a partir da `main` | projeto Supabase **produção** |
+
+Hoje só existe o ambiente **local**. Não crie projetos remotos (Supabase/Vercel) nem configure staging/produção sem pedido explícito do usuário.
+
+- As variáveis `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` na Vercel são configuradas **por ambiente**: *Preview* → staging, *Production* → produção. Preview nunca aponta para produção (I-03).
+- Tudo que começa com `VITE_` vai para o bundle público: só a chave anon/publishable. Nunca a `service_role` (I-04).
+- O Supabase Auth de cada projeto precisa das Redirect URLs do domínio correspondente (recuperação de senha, spec-001/RF-01). Ver `specs/001-Auth/plan.md`.
+- Deploy de produção automático ou manual (constituição OPEN-01): **adiado** até existir produção. Não trate como decisão a tomar agora.
+
+### Ambiente local (desenvolvimento)
+
+- **SO:** Ubuntu no WSL2, com `systemd=true` em `/etc/wsl.conf`.
+- **Docker:** Docker Engine **nativo no WSL** (não Docker Desktop). Instalação: `sudo bash scripts/setup-docker-wsl.sh`. O usuário fica no grupo `docker` — `docker` roda sem `sudo`.
+- **Supabase CLI:** vem como devDependency em `web/`; não precisa de instalação global. De dentro de `web/`: `npx supabase <comando> --workdir ..` (ex.: `npx supabase start --workdir ..`). Os comandos `supabase …` deste arquivo equivalem a isso.
+- **Portas locais:** API `54321`, Postgres `54322`, Studio `54323` (http://127.0.0.1:54323), Mailpit `54324` (http://127.0.0.1:54324 — e-mails de auth, como recuperação de senha, chegam aqui), Vite `5173`.
+- **Memória:** a stack do Supabase usa ~2–3 GB. Se o WSL ficar sem memória, ajuste `memory=` em `%UserProfile%\.wslconfig` no Windows.
+- Para parar a stack sem perder dados: `supabase stop`. `supabase db reset` **apaga** o banco local e recria a partir das migrations + seed.
+
+## Plugins / MCP
+
+### Supabase (somente leitura)
+
+O MCP do Supabase é usado **só para leitura**. As ferramentas de escrita estão bloqueadas em `.claude/settings.json` (`permissions.deny`); não tente contorná-las com CLI, `psql` ou outra via.
+
+- **Pode usar:** `list_tables`, `list_migrations`, `list_extensions`, `get_advisors` (rode os advisors de segurança/performance antes de concluir uma feature — complementa a validação de RLS), `query_logs`, `search_docs`, `get_project`, `get_project_url`, `get_publishable_keys`.
+- **Bloqueado:** `apply_migration`, `execute_sql`, branches (`create/merge/rebase/reset/delete_branch`), `create/pause/restore_project`, edge functions e secrets.
+- Mudança de schema segue o fluxo normal: arquivo em `supabase/migrations/` → `supabase db reset` + `supabase test db` local → PR → `supabase db push` no staging e depois na produção, **sempre com confirmação explícita do usuário**.
+- Tipos vêm do banco local (`npm run db:types`), não do `generate_typescript_types` remoto.
+- Para inspeção/debug, prefira o projeto **staging**; só consulte produção quando o usuário pedir.
+
+### Vercel
+
+- Configuração do projeto: Root Directory `web/`, build `npm run build`, saída `dist`. `web/vercel.json` reescreve todas as rotas para `/index.html` (React Router).
+- **Pode usar sem pedir:** leitura de deploys, build logs, runtime logs, variáveis (sem decifrar valores), `search_vercel_documentation`.
+- **Só com confirmação explícita:** deploy de produção, `request_promote`, `request_rollback`, criar/editar variáveis de ambiente, domínios/DNS, firewall, criar/pausar projeto.
+- Não adicione integrações da Marketplace, Blob, Edge Config, Flags, AI SDK etc. — fora da stack; se parecer necessário, proponha na spec/constituição primeiro.
 
 ## Estrutura do repositório
 
@@ -118,6 +164,15 @@ supabase test db                    # roda testes pgTAP
 supabase migration new <nome>       # nova migration
 supabase gen types typescript --local > web/src/types/database.ts
 
+# Banco remoto (sempre com confirmação explícita)
+supabase link --project-ref <ref>   # staging ou produção
+supabase db push                    # aplica migrations pendentes no projeto linkado
+
+# Vercel
+vercel                              # deploy de preview (ou /vercel:deploy)
+vercel env pull                     # baixa variáveis (ou /vercel:env)
+# vercel --prod                     # produção — só com confirmação (ver OPEN-01)
+
 # Front (dentro de web/)
 npm install
 npm run dev
@@ -144,7 +199,7 @@ npm run test:e2e                    # Playwright
 4. Prefira mudanças pequenas e revisáveis; não refatore código fora do escopo da tarefa.
 5. Se uma regra nova surgir durante o trabalho, **registre na spec** (ou como `OPEN-xx`) em vez de decidir silenciosamente.
 6. Ao terminar, resuma: o que mudou, quais `CA-xx` foram cobertos, o que ficou pendente.
-7. Nunca execute comandos destrutivos (`db reset` em produção, `drop`, `git push --force`) sem confirmação explícita.
+7. Nunca execute comandos destrutivos (`db reset` em produção, `drop`, `git push --force`) sem confirmação explícita. O mesmo vale para ações remotas: `supabase db push`, deploy/promote/rollback de produção na Vercel e alteração de variáveis ou domínios.
 
 ## Fora de escopo (versão inicial)
 
@@ -156,3 +211,4 @@ Consulte os `OPEN-xx` em cada `spec.md`. Principais:
 - Modelo de entrada de usuários (spec 001, OPEN-01).
 - Expiração de reserva não retirada (spec 004, OPEN-02).
 - Devolução parcial danificada de item com várias unidades (spec 005, OPEN-02).
+- Deploy de produção automático ou manual (constituição, OPEN-01) — *adiado até existir produção*.

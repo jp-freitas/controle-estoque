@@ -79,3 +79,22 @@ Se o comportamento mudar, **a spec muda primeiro**. Uma spec = uma branch/PR.
 ## 10. Fora de escopo (versão inicial)
 
 Prazo de devolução e controle de atraso · multi-escola · aplicativo móvel nativo · leitura de QR code · notificação por e-mail (candidata a extra futuro).
+
+## 11. Infraestrutura e ambientes
+
+| Ambiente | Situação | Front-end | Banco / Auth |
+|---|---|---|---|
+| local | em uso | Vite (`npm run dev`) | Supabase local (Docker) |
+| staging | a criar | Vercel — deploys de preview (um por PR) | Projeto Supabase **staging**, separado |
+| produção | **planejado** | Vercel — domínio de produção, só a partir da `main` | Projeto Supabase **produção** |
+
+Os princípios abaixo valem desde já para qualquer ambiente remoto que venha a ser criado.
+
+- **I-01** O front é um **SPA estático** hospedado na Vercel. Não há código de servidor fora do Postgres: nada de Vercel Functions, Next.js, Server Actions nem Supabase Edge Functions (reforça P-01).
+- **I-02** O schema remoto (staging e produção) **só muda por migration versionada** em `supabase/migrations/`, aplicada com `supabase db push` depois de testada localmente. Nunca pelo painel nem por SQL avulso.
+- **I-03** Deploys de preview **nunca** apontam para o banco de produção.
+- **I-04** Só variáveis públicas (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) são configuradas na Vercel. A `service_role` nunca sai do painel do Supabase.
+
+### Pontos em aberto
+
+- **OPEN-01 (adiado):** Deploy de produção automático a cada merge na `main` ou promoção manual de um deploy de preview? Decidir quando o ambiente de produção for criado.
