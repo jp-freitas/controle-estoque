@@ -23,17 +23,18 @@ Após a aprovação, o item é entregue fisicamente ao professor (retirada) e, q
 - RF-06: A tela mostra uma conferência (checklist) dos itens e quantidades antes de confirmar a retirada.
 
 ### Devolução
-- RF-07: RPC `registrar_devolucao(solicitacao_id, itens)` só para `admin` ativo, sobre solicitação `retirada`. `itens` informa, por linha, `quantidade_devolvida` e, opcionalmente, `marcar_inoperante` e `observacao`.
+- RF-07: RPC `registrar_devolucao(solicitacao_id, itens)` só para `admin` ativo, sobre solicitação `retirada`. `itens` informa, por linha, `quantidade_devolvida` (unidades em bom estado), `quantidade_danificada` e, opcionalmente, `marcar_inoperante` e `observacao`.
 - RF-08: Cada devolução faz `em_uso -= q` e acumula em `quantidade_devolvida`; devolução parcial é permitida.
-- RF-09: A quantidade devolvida acumulada nunca excede `quantidade_aprovada`, e só vale para itens não consumíveis.
-- RF-10: Se `marcar_inoperante = true`, o item passa a `operante = false`. A unidade devolvida volta ao estoque contábil, mas o item inoperante deixa de poder ser solicitado até o admin reativá-lo. *(Ver OPEN-02 sobre perdas e itens com várias unidades.)*
-- RF-11: Quando todas as linhas não consumíveis estiverem com `devolvida = aprovada`, a solicitação passa a `concluida`.
-- RF-12: Registro de **perda/baixa** (item não devolvido por perda ou quebra irreparável): admin pode dar baixa na quantidade pendente, com motivo, reduzindo `em_uso` e `total` e gravando `movimentacao` tipo `ajuste`.
+- RF-09: Por linha, `quantidade_devolvida + quantidade_baixada` acumuladas nunca excedem `quantidade_aprovada`. Devolução só vale para itens não consumíveis.
+- RF-10: `marcar_inoperante = true` só é aceito para item de **unidade única** (com `numero_patrimonio`): o item passa a `operante = false`, a unidade volta ao estoque contábil, mas não pode ser solicitado até um admin reativá-lo com motivo (spec-002/RF-14).
+- RF-16: Unidades **danificadas** (`quantidade_danificada`) recebem baixa: `em_uso -= q` e `total -= q`, movimentação tipo `ajuste` com o motivo, e acumulam em `quantidade_baixada` da linha. Vale para itens com várias unidades e para itens de patrimônio irrecuperáveis.
+- RF-11: Quando todas as linhas não consumíveis estiverem com `devolvida + baixada = aprovada`, a solicitação passa a `concluida`.
+- RF-12: Registro de **perda/baixa** (item não devolvido por perda ou quebra irreparável): admin pode dar baixa na quantidade pendente, com motivo, reduzindo `em_uso` e `total`, acumulando em `quantidade_baixada` da linha e gravando `movimentacao` tipo `ajuste`.
 - RF-13: Todas as operações geram `movimentacao` com usuário e data.
 
 ### Consultas
-- RF-14: Relatório "Itens atualmente com cada professor" (solicitações `retirada` com quantidade pendente de devolução), filtrável por professor e item.
-- RF-15: Histórico por item e por professor (movimentações em ordem cronológica).
+- RF-14: Relatório "Itens atualmente com cada professor" (solicitações `retirada` com quantidade pendente = aprovada − devolvida − baixada > 0), filtrável por professor e item. Entregue pela spec-007 (RF-09 a RF-11).
+- RF-15: Histórico por item e por professor (movimentações em ordem cronológica). Entregue pela spec-007 (RF-12, RF-13).
 
 ## Regras de negócio
 - RN-01: Nunca existe estoque "negativo": o `CHECK (reservada + em_uso <= total)` é a última barreira.
@@ -63,7 +64,7 @@ CA-05  Dado a devolução das 2 restantes
 CA-06  Dado uma devolução de quantidade maior que a pendente
        Então a operação é rejeitada e nenhum contador muda.
 
-CA-07  Dado uma devolução com `marcar_inoperante`
+CA-07  Dado a devolução de um item com patrimônio com `marcar_inoperante`
        Então o item fica `operante = false`, deixa de poder ser solicitado e a mudança é auditada.
 
 CA-08  Dado uma solicitação já retirada
@@ -84,10 +85,22 @@ CA-11  Dado duas operações simultâneas (retirada e ajuste) no mesmo item
 CA-12  Dado o relatório "com cada professor"
        Então lista apenas quantidades ainda pendentes de devolução, agrupadas por professor.
 
+CA-13  Dado uma solicitação `retirada` com 10 chaves (em_uso 10, total 10)
+       Quando o admin devolve 9 boas e 1 danificada
+       Então `em_uso = 0`, `total = 9`, `quantidade_baixada = 1`, movimentações `devolucao` e `ajuste` gravadas e status `concluida`.
+
+CA-14  Dado uma solicitação `retirada` com 2 ferramentas, uma delas perdida (baixa de 1)
+       Quando a outra é devolvida
+       Então a solicitação passa a `concluida` (devolvida 1 + baixada 1 = aprovada 2).
+
+CA-15  Dado um item sem patrimônio (várias unidades)
+       Quando a devolução vem com `marcar_inoperante`
+       Então a operação é rejeitada, orientando a informar as unidades danificadas.
+
 ## Fora de escopo
 Assinatura digital de recebimento, prazo e alerta de atraso, QR code, retirada parcial de uma solicitação aprovada.
 
 ## Pontos em aberto
-- **OPEN-01:** Admins precisam de retirada parcial (professor leva só parte dos itens aprovados e o resto depois)?
-- **OPEN-02:** Item com várias unidades (ex.: 10 chaves) devolvido com 1 unidade danificada: marcar o item todo como inoperante é incorreto. Opções: (a) permitir informar quantas unidades voltaram danificadas e baixá-las ou movê-las para um item "em manutenção"; (b) tratar como perda parcial (RF-12). Definir a regra antes da implementação.
-- **OPEN-03:** Quem pode reativar um item inoperante? Sugestão: apenas admin, com motivo, auditado.
+- **OPEN-01 (resolvido em 2026-10-19):** Sem retirada parcial na v1, coerente com RF-05.
+- **OPEN-02 (resolvido em 2026-10-19):** A devolução informa as unidades danificadas, que recebem baixa (RF-16); `marcar_inoperante` só para item de unidade única (RF-10). Conclusão passa a considerar `devolvida + baixada` (RF-11). Refletido em RF-07, RF-09 a RF-12, RF-14, RF-16 e CA-13 a CA-15.
+- **OPEN-03 (resolvido em 2026-10-19):** Só admin ativo reativa item inoperante, com motivo obrigatório, auditado (spec-002/RF-14, CA-11).

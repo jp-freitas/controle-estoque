@@ -130,6 +130,15 @@ web/
 - Todo objeto novo: tabela com RLS habilitado e políticas explícitas, constraints no banco (não só no front), índices para chaves estrangeiras usadas em filtros.
 - Funções RPC: nome em verbo (`aprovar_solicitacao`), retornam erros com mensagens claras em português para o front exibir.
 - Depois de mudar o schema: `supabase gen types typescript --local > web/src/types/database.ts`.
+- **Dono do schema:** cada spec cria as próprias tabelas e acrescenta colunas às de outra spec por **migration própria** (002 cria `item` e `movimentacao`; 003 cria `solicitacao`; 004 e 005 acrescentam colunas).
+
+### Banco — convenções técnicas transversais
+- **Erros de RPC:** `raise exception using errcode = 'P0001', message = '<texto em pt-BR para o usuário>', detail = '<jsonb>'`. Erros por item vão em `detail` como `[{"item_id": …, "nome": …, "motivo": …}]`. No front, `web/src/shared/lib/erroRpc.ts` converte `PostgrestError` em mensagem + lista. Violação de FK (`23503`) numa exclusão vira "Possui histórico — desative".
+- **Helpers da spec 001**, reutilizados em todas as políticas e RPCs: `eh_admin_ativo()`, `usuario_ativo()` e o trigger genérico `auditar()`. Para gravar motivo na auditoria, a RPC faz `set_config('app.motivo', motivo, true)` antes do `update`; RPCs de movimento de estoque (reserva, retirada, devolução, baixa) fazem `set_config('app.origem', 'movimentacao', true)` para o trigger não auditar contadores (spec-006/RF-05).
+- **Bloqueio (P-04):** RPCs de estoque travam primeiro a `solicitacao` (`FOR UPDATE`) e depois os `item` **em ordem de `id`**, para evitar deadlock.
+- **Contadores e `operante`:** `revoke insert/update` por coluna para `authenticated` em `quantidade_total`, `quantidade_reservada`, `quantidade_em_uso` e `operante`; só RPCs `SECURITY DEFINER` mexem (P-01).
+- **Leitura agregada:** views com `security_invoker = true` (respeitam a RLS) para catálogo, filas e relatórios.
+- **Teste de concorrência:** pgTAP roda numa transação só e não simula duas sessões. Concorrência fica em Vitest + `pg` com dois clientes contra o Postgres local (porta `54322`), em `supabase/tests/concorrencia/*.test.ts`, rodado por `npm run test:db:concorrencia` em `web/`. O nome do teste cita o CA.
 
 ### Front-end
 - TypeScript estrito; sem `any` sem justificativa.
@@ -208,6 +217,4 @@ Prazo de devolução e controle de atraso · multi-escola · app móvel nativo �
 ## Decisões pendentes
 
 Consulte os `OPEN-xx` em cada `spec.md`. Principais:
-- Expiração de reserva não retirada (spec 004, OPEN-02).
-- Devolução parcial danificada de item com várias unidades (spec 005, OPEN-02).
 - Deploy de produção automático ou manual (constituição, OPEN-01) — *adiado até existir produção*.

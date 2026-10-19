@@ -17,7 +17,7 @@ O administrador analisa solicitações pendentes e decide aprovar (total ou parc
   - revalida a disponibilidade e a operância de cada item;
   - incrementa `quantidade_reservada` na quantidade aprovada;
   - grava `movimentacao` tipo `reserva` por linha com aprovada > 0;
-  - registra `aprovador_id` e `data_decisao`;
+  - registra `aprovador_id`, `data_decisao` e a `observacao` geral, opcional;
   - muda o status para `aprovada`.
 - RF-05: Se a soma das quantidades aprovadas for zero, a aprovação é rejeitada (usar recusa).
 - RF-06: Se qualquer linha excede a disponibilidade no momento da decisão, a operação inteira falha sem alterar contadores, indicando o item.
@@ -25,8 +25,9 @@ O administrador analisa solicitações pendentes e decide aprovar (total ou parc
 - RF-08: RPC `recusar_solicitacao(id, motivo)`: `motivo` obrigatório; status `recusada`; não altera estoque.
 - RF-09: Só solicitações `pendente` podem ser aprovadas ou recusadas.
 - RF-10: RPC `cancelar_solicitacao_aprovada(id, motivo)` (admin): solicitação `aprovada` e sem retirada volta a `cancelada`, liberando `reservada` e gravando `movimentacao` tipo `liberacao_reserva`.
-- RF-11: Aprovação parcial exige que o professor veja, no detalhe da solicitação, a quantidade aprovada por item. *(Ver OPEN-01 sobre justificativa por item.)*
+- RF-11: Aprovação parcial exige que o professor veja, no detalhe da solicitação, a quantidade aprovada por item e a observação geral da aprovação, se houver. Não há justificativa por item.
 - RF-12: Estado terminal para o professor: ao ser aprovada ou recusada, a solicitação aparece com o novo status em "Minhas solicitações".
+- RF-13: A reserva de uma solicitação aprovada **não expira** automaticamente. O admin vê a lista de aprovadas aguardando retirada, com há quantos dias cada uma foi aprovada, e cancela pelo RF-10 se necessário.
 
 ## Regras de negócio
 - RN-01: Apenas **um** administrador precisa aprovar.
@@ -71,10 +72,17 @@ CA-09  Dado um item que ficou inoperante entre o envio e a aprovação
 CA-10  Dado a aprovação de uma solicitação com quantidade aprovada total zero
        Então a operação é rejeitada com orientação para recusar.
 
+CA-11  Dado uma aprovação parcial com observação "Só há 2 em estoque"
+       Quando o professor abre o detalhe da solicitação
+       Então vê a quantidade aprovada de cada item e a observação.
+
+CA-12  Dado uma solicitação aprovada há 10 dias e não retirada
+       Então continua `aprovada`, com a reserva mantida, e aparece na lista de aguardando retirada com "10 dias".
+
 ## Fora de escopo
-Notificação por e-mail ao professor ou ao admin (candidata à spec-007), aprovação em duas etapas, delegação de aprovação.
+Notificação por e-mail ao professor ou ao admin (extra futuro), aviso/selo de novidade no sistema, aprovação em duas etapas, delegação de aprovação, expiração automática de reserva.
 
 ## Pontos em aberto
-- **OPEN-01:** Aprovação parcial exige justificativa por item?
-- **OPEN-02:** Uma solicitação aprovada que não é retirada em X dias expira e libera a reserva automaticamente? Sem prazo definido, a reserva pode ficar presa indefinidamente.
-- **OPEN-03:** O professor é avisado (notificação no sistema) quando a decisão é tomada?
+- **OPEN-01 (resolvido em 2026-10-19):** Sem justificativa por item; a aprovação tem uma observação geral opcional, visível ao professor. Refletido em RF-04, RF-11 e CA-11.
+- **OPEN-02 (resolvido em 2026-10-19):** A reserva não expira na v1; o admin acompanha a lista de aguardando retirada e cancela pelo RF-10. Refletido em RF-13 e CA-12.
+- **OPEN-03 (resolvido em 2026-10-19):** Sem aviso/notificação na v1; o professor vê o novo status em "Minhas solicitações" (RF-12).

@@ -51,4 +51,4 @@ Verificações do front (dentro de `web/`): `npm run lint`, `npm run format:chec
 
 ## Status
 
-Em fase inicial: constituição e specs 001 a 005 escritas; migrations e front-end em andamento.
+Em fase inicial: constituição e specs 001 a 007 com `spec.md`, `plan.md` e `tasks.md`; implementação começando pela spec 001.

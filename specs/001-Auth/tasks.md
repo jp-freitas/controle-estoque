@@ -25,10 +25,11 @@ O plano depende de dois comportamentos do Supabase Auth que precisam ser confirm
 - [ ] **T-03** 🗄️ Migration `001_perfis_e_auditoria`:
   - extensão `citext`; enums `perfil` (`admin`, `solicitante`) e `status_usuario` (`pendente`, `ativo`, `inativo`);
   - `profiles` (`id` → `auth.users`, `nome`, `email citext unique`, `matricula`, `perfil`, `status`, timestamps);
-  - `auditoria` (tabela, entidade, id do registro, operação, antes/depois `jsonb`, `auth.uid()`, data) — sem `update`/`delete` para ninguém (P-06);
+  - `auditoria` conforme spec-006/RF-01 e `plan.md` → Auditoria, com revokes e trigger de bloqueio de `update`/`delete`/`truncate` (spec-006/RF-10 a RF-12, P-06);
   - funções auxiliares `eh_admin_ativo()` e `usuario_ativo()` (`SECURITY DEFINER`, `search_path` fixo) usadas pelas políticas.
-- [ ] **T-04** 🧪 pgTAP `001_auditoria.test.sql` — **RN-02/CA-03, CA-06**: mudança de `perfil`/`status` grava linha em `auditoria` com antes/depois e autor; `update`/`delete` em `auditoria` é negado inclusive para admin.
+- [ ] **T-04** 🧪 pgTAP `001_auditoria.test.sql` — **RN-02/CA-03, CA-06**: mudança de `perfil`/`status` grava linha em `auditoria` com antes/depois, autor e motivo (`app.motivo`), conforme `plan.md` → Auditoria; cobre também spec-006 CA-07, CA-08, CA-11 a CA-13 no que toca `profiles`; `update`/`delete` em `auditoria` é negado inclusive para admin.
 - [ ] **T-05** 🗄️ Trigger de auditoria em `profiles` (perfil/status) — base reutilizada pela spec 002 (`item`, `tipo_item`, `local`).
+- [ ] **T-06a** 🧪 Suíte de concorrência: `supabase/tests/concorrencia/` com Vitest + `pg` (devDependency em `web/`), helper para abrir duas sessões autenticadas como usuários diferentes contra o Postgres local, script `npm run test:db:concorrencia` (ver `CLAUDE.md` → Banco). Usada por T-09, T-13 e pelas specs 004/005.
 - [ ] **T-06** 🗄️ `seed.sql`: primeiro admin (`auth.users` + `profiles` `admin`/`ativo`) e um solicitante de exemplo de cada status, com senha conhecida só para dev (RN-01).
 
 ## Fase 2 — RLS e gestão de usuários (RF-04 a RF-07, RF-09, RF-15, RF-16)
@@ -44,7 +45,7 @@ O plano depende de dois comportamentos do Supabase Auth que precisam ser confirm
   - **CA-04**: solicitante tentando virar admin (RPC e `update` direto) → negado;
   - **CA-05**: único admin ativo não se rebaixa nem se inativa, com mensagem clara;
   - **CA-06**: com dois admins, um rebaixa o outro;
-  - **RF-07** com concorrência: dois admins se rebaixando ao mesmo tempo não zeram os admins ativos (duas transações).
+  - **RF-07** com concorrência: dois admins se rebaixando ao mesmo tempo não zeram os admins ativos — teste na suíte de concorrência (T-06a), não em pgTAP.
   - caminhos negados: solicitante, pendente e inativo chamando cada RPC.
 - [ ] **T-10** 🗄️ RPCs `alterar_status_usuario(id, status)` e `alterar_perfil_usuario(id, perfil)`: admin ativo, nunca a si mesmo em perfil/status (RF-06), trava de último admin com `FOR UPDATE` (RF-07, P-04, P-08).
 - [ ] **T-11** 🧪 pgTAP `001_editar_perfil.test.sql`:
@@ -61,7 +62,7 @@ O plano depende de dois comportamentos do Supabase Auth que precisam ser confirm
   - **CA-13**: e-mail com conta ou com convite em aberto → rejeitado; e-mail com convite **expirado** → permitido;
   - **CA-17**: matrícula de usuário ou de convite em aberto → rejeitada;
   - RN-03: `Prof@Escola.br` e `prof@escola.br` são o mesmo e-mail;
-  - concorrência: dois admins convidando o mesmo e-mail ao mesmo tempo → só um convite (duas transações).
+  - concorrência: dois admins convidando o mesmo e-mail ao mesmo tempo → só um convite — teste na suíte de concorrência (T-06a).
 - [ ] **T-14** 🗄️ Migration `001_convite`: tabela `convite`, view/função de situação derivada, RLS (só `select` para admin ativo), RPCs `convidar_usuario` e `cancelar_convite` com `pg_advisory_xact_lock`.
 - [ ] **T-15** 🧪 pgTAP `001_aceitar_convite.test.sql`:
   - **CA-09**: aceite válido cria `profiles` `pendente` com e-mail, nome e perfil do convite; convite vira `aceito`;
