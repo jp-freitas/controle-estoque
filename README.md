@@ -20,6 +20,7 @@ Professor solicita → Sistema valida disponibilidade → Admin aprova → Retir
 - **Banco e autenticação:** Supabase (Postgres, Auth, RLS)
 - **Regras de negócio:** funções RPC em Postgres
 - **Front-end:** React, TypeScript, Vite, TanStack Query, React Hook Form, Zod, Tailwind
+- **Hospedagem:** Vercel (front estático) + Supabase (staging e produção planejados; hoje só há ambiente local)
 
 ## Como o projeto é conduzido
 
@@ -31,7 +32,7 @@ O projeto usa **Spec Driven Development**: a especificação vem antes do códig
 
 ## Como rodar
 
-Pré-requisitos: Node.js 24 (`nvm use`, ver `.nvmrc`) e Docker. A Supabase CLI já vem como dependência de desenvolvimento em `web/` (use `npx supabase ... --workdir ..` de dentro de `web/`, ou instale a CLI globalmente).
+Pré-requisitos: Node.js 24 (`nvm use`, ver `.nvmrc`) e Docker Engine (no WSL2: `sudo bash scripts/setup-docker-wsl.sh`; detalhes em `CLAUDE.md` → Ambiente local). A Supabase CLI já vem como dependência de desenvolvimento em `web/` (use `npx supabase ... --workdir ..` de dentro de `web/`, ou instale a CLI globalmente).
 
 ```bash
 # Banco local
