@@ -39,7 +39,7 @@ Trava a solicitação e depois os itens em ordem de `id`; só `aprovada` (sem re
 - View `fila_aprovacao` (`security_invoker`, admin): solicitações `pendente` ordenadas por `criado_em` (mais antigas primeiro), solicitante, justificativa, linhas com quantidade solicitada e **disponível atual** de cada item (RF-03).
 - View `aprovadas_aguardando_retirada` (admin): `aprovada`, com `dias_aguardando = current_date − data_decisao::date` (RF-13, CA-12). Sem job de expiração (OPEN-02). Também alimenta o card "aprovadas aguardando retirada" do painel (spec-007/RF-02).
 - O professor vê `quantidade_aprovada` e `observacao_decisao` pelo próprio `select` em `solicitacao`/`solicitacao_item` (RF-11, RF-12, CA-11); a RLS da 003 já cobre.
-- 004 OPEN-03 (aviso ao professor) segue aberto; na v1 o professor vê o status em "Minhas solicitações".
+- Sem aviso ao professor (OPEN-03): ele vê o status em "Minhas solicitações".
 
 ## Front
 

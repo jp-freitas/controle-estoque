@@ -80,9 +80,9 @@ CA-12  Dado uma solicitação aprovada há 10 dias e não retirada
        Então continua `aprovada`, com a reserva mantida, e aparece na lista de aguardando retirada com "10 dias".
 
 ## Fora de escopo
-Notificação por e-mail ao professor ou ao admin (extra futuro), aprovação em duas etapas, delegação de aprovação, expiração automática de reserva.
+Notificação por e-mail ao professor ou ao admin (extra futuro), aviso/selo de novidade no sistema, aprovação em duas etapas, delegação de aprovação, expiração automática de reserva.
 
 ## Pontos em aberto
 - **OPEN-01 (resolvido em 2026-10-19):** Sem justificativa por item; a aprovação tem uma observação geral opcional, visível ao professor. Refletido em RF-04, RF-11 e CA-11.
 - **OPEN-02 (resolvido em 2026-10-19):** A reserva não expira na v1; o admin acompanha a lista de aguardando retirada e cancela pelo RF-10. Refletido em RF-13 e CA-12.
-- **OPEN-03:** O professor é avisado (notificação no sistema) quando a decisão é tomada?
+- **OPEN-03 (resolvido em 2026-10-19):** Sem aviso/notificação na v1; o professor vê o novo status em "Minhas solicitações" (RF-12).

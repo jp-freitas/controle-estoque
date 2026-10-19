@@ -37,7 +37,6 @@ Migration `003_solicitacao`.
   3. para **cada** item, acumula falhas em um array: não existe/desativado, inoperante (CA-03), `disponivel < quantidade` (CA-02);
   4. se houver falha, `raise` com `detail` = `[{"item_id", "nome", "motivo"}]` e nada é gravado (RF-07);
   5. insere `solicitacao` + linhas. **Não** toca contadores e **não** usa `FOR UPDATE` (RN-01: é pré-validação; a garantia é na aprovação).
-  - Ponto para o 003 OPEN-02 (limite por solicitação), se decidido: checagem extra no passo 2.
 - `cancelar_solicitacao(id)` — dono, `usuario_ativo()`, `select … for update` na solicitação, só se `pendente` → `cancelada`, `cancelado_em = now()` (RF-09, CA-05). Em `aprovada` ou depois: "Solicitação já aprovada; peça ao administrador" (CA-06).
 
 ## Front

@@ -49,8 +49,6 @@ Legenda: 🧪 teste primeiro · 🗄️ banco · 🖥️ front · 🔍 validaç�
 - [ ] **T-14** 🔍 CI verde.
 - [ ] **T-15** 📝 Atualizar `spec.md`/`plan.md` e abrir PR `spec-003-solicitacao`.
 
-> 003 OPEN-02 (limite por solicitação) segue aberto; se for decidido, entra como cenário novo no T-04 e checagem no passo 2 da RPC.
-
 ---
 
 ## Cobertura de critérios de aceite

@@ -66,9 +66,9 @@ CA-09  Dado a recarga da página com itens no carrinho
        Então o carrinho é restaurado (persistência local) e revalidado contra o catálogo atual.
 
 ## Fora de escopo
-Reserva de itens ao montar o carrinho, agendamento de data futura de retirada, edição de solicitação enviada.
+Limite de itens/unidades por solicitação, reserva de itens ao montar o carrinho, agendamento de data futura de retirada, edição de solicitação enviada.
 
 ## Pontos em aberto
 - **OPEN-01 (resolvido em 2026-10-19):** Após a aprovação, só o admin cancela (spec-004/RF-10), coerente com CA-06. Refletido em RF-09.
-- **OPEN-02:** Limite de quantidade de itens/unidades por solicitação?
+- **OPEN-02 (resolvido em 2026-10-19):** Sem limite de itens ou unidades por solicitação na v1; a disponibilidade e a aprovação (inclusive parcial, spec-004) já limitam.
 - **OPEN-03 (resolvido em 2026-10-19):** Sem campo próprio de turma/disciplina; a `justificativa` cobre (RF-06).

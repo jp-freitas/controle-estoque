@@ -60,8 +60,6 @@ Legenda: 🧪 teste primeiro · 🗄️ banco · 🖥️ front · 🔍 validaç�
 - [ ] **T-17** 🔍 CI verde, incluindo a suíte de concorrência.
 - [ ] **T-18** 📝 Atualizar `spec.md`/`plan.md` e abrir PR `spec-004-aprovacao`.
 
-> 004 OPEN-03 (aviso ao professor) segue aberto; na v1 o status aparece em "Minhas solicitações" (T-15).
-
 ---
 
 ## Cobertura de critérios de aceite

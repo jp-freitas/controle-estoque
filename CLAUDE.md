@@ -217,6 +217,4 @@ Prazo de devolução e controle de atraso · multi-escola · app móvel nativo �
 ## Decisões pendentes
 
 Consulte os `OPEN-xx` em cada `spec.md`. Principais:
-- Limite de itens/unidades por solicitação (spec 003, OPEN-02).
-- Aviso ao professor quando a decisão é tomada (spec 004, OPEN-03).
 - Deploy de produção automático ou manual (constituição, OPEN-01) — *adiado até existir produção*.
