@@ -1,0 +1,62 @@
+# CI do projeto (constituição Q-03).
+# Front: lint, Prettier, typecheck, Vitest e build. Banco: migrations + lint do schema + pgTAP.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  front:
+    name: Front (lint, formato, tipos, testes, build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run typecheck
+      - run: npm run test
+      - run: npm run build
+
+  banco:
+    name: Banco (migrations, lint, pgTAP)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      # A Supabase CLI vem como devDependency em web/ (mesma versão do ambiente local).
+      - run: npm ci
+      # Sobe só o Postgres, aplicando todas as migrations e o seed do zero.
+      - run: npx supabase db start --workdir ..
+      - run: npx supabase db lint --workdir .. --level error --fail-on error
+      # `supabase test db` falha quando não há nenhum teste; o passo liga sozinho
+      # quando o primeiro arquivo pgTAP entrar em supabase/tests/.
+      - name: Testes pgTAP
+        if: hashFiles('supabase/tests/**/*.sql') != ''
+        run: npx supabase test db --workdir ..
+      - if: always()
+        run: npx supabase stop --workdir .. --no-backup
