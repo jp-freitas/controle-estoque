@@ -73,3 +73,16 @@ Criado no `seed.sql`/SQL manual: usuário em `auth.users` + `profiles` com `perf
   - `atualizar_meu_perfil(nome, matricula)` — só usuário `ativo`, só a própria linha (RF-15);
   - `atualizar_usuario(id, nome, matricula)` — só admin ativo (RF-16).
   Assim, `email`, `perfil` e `status` não podem ser alterados por essas vias (RF-06, CA-16).
+
+## Auditoria (RN-02, constituição P-06)
+
+O modelo da auditoria é da **spec 006** (RF-01 a RF-12, RF-17). O **registro** é implementado nesta spec (T-03 a T-05), porque CA-03 e CA-06 daqui dependem dele; a spec 002 liga o mesmo trigger em `item`, `tipo_item` e `local`; a spec 006 entrega a consulta (RF-13 a RF-16).
+
+- Tabela `auditoria` (spec-006/RF-01): `id bigint identity`, `tabela text`, `registro_id uuid`, `acao text` (`INSERT`/`UPDATE`/`DELETE`), `usuario_id uuid null` (`auth.uid()`; nulo = "Sistema"), `dados_antes jsonb`, `dados_depois jsonb`, `campos_alterados text[]`, `motivo text null`, `criado_em timestamptz default now()`. Índices em `(tabela, registro_id, criado_em desc)`, `usuario_id`, `criado_em`.
+- Segurança (RF-10 a RF-12): RLS com `select` só para `eh_admin_ativo()`; `revoke insert, update, delete, truncate` de `anon` e `authenticated`; trigger `before update or delete` e `before truncate` em `auditoria` que sempre levanta erro (vale também para `service_role`).
+- Trigger genérico `auditar()` (`after insert or update or delete`, `SECURITY DEFINER`, `search_path` fixo), na mesma transação (RF-08):
+  - recebe por argumento as colunas **auditáveis** em update: em `profiles`, só `perfil` e `status` (spec-006/RF-06; `insert` sempre auditado);
+  - calcula `campos_alterados`; se vazio, não grava (RF-07);
+  - em `item`: se só mudaram contadores/`atualizado_em` e `current_setting('app.origem', true) = 'movimentacao'`, não grava (RF-05);
+  - grava `motivo = nullif(current_setting('app.motivo', true), '')` (RF-17);
+  - nunca copia colunas fora da tabela auditada (RF-09).
