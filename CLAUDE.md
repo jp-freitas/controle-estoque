@@ -104,7 +104,7 @@ web/
 - Toda regra de negócio tem teste automatizado referenciando um `CA-xx` (Q-01). Nomeie o teste com o ID: `CA-03: aprovações simultâneas não reservam em dobro`.
 - Funções RPC e políticas RLS são testadas no banco com pgTAP (Q-02). Teste sempre o caminho **negado** (usuário comum, pendente, inativo), não só o feliz.
 - Concorrência de estoque precisa de teste com duas transações simultâneas.
-- CI: ESLint, Prettier, `tsc --noEmit`, testes do front e `supabase test db` (Q-03).
+- CI (`.github/workflows/ci.yml`, Q-03): ESLint, Prettier, `tsc --noEmit`, Vitest e build do front; migrations do zero, `supabase db lint` e `supabase test db` no banco. O passo pgTAP só roda quando existir algum `.sql` em `supabase/tests/`. A suíte de concorrência e o Playwright entram no CI quando forem criados (spec-001/T-06a e spec-005/T-15).
 - Fluxo principal tem E2E: solicitar → aprovar → retirar → devolver (Q-04).
 - Uma tarefa só está pronta quando os testes passam e a spec reflete o que foi entregue.
 
