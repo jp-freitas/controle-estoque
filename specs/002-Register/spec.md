@@ -28,19 +28,20 @@ O administrador mantém o catálogo do inventário: tipos de item, locais e iten
 | `local_id` | Sim | |
 | `quantidade_total` | Sim | Inteiro ≥ 0 |
 | `operante` | Sim | Padrão: operante |
-| `estado` | Não | Ex.: novo, bom, desgastado |
+| `estado` | Não | Lista fechada: `novo`, `bom`, `regular`, `ruim` |
 | `numero_patrimonio` | Não | Único quando preenchido |
 | `descricao` | Não | |
 | `estoque_minimo` | Não | Só faz sentido para insumos |
 
 - RF-06: Contadores `quantidade_reservada` e `quantidade_em_uso` não são editáveis pelo formulário; só mudam via funções de estoque (constituição P-01).
-- RF-07: Item com `numero_patrimonio` exige `quantidade_total = 1`.
+- RF-07: Item com `numero_patrimonio` é cadastrado com `quantidade_total = 1`. Depois do cadastro, só pode ficar com 1 ou com 0 (após baixa por perda/dano, spec-005), nunca mais que 1.
 - RF-08: Admin pode criar, editar e desativar itens. Item com histórico de movimentação não pode ser excluído, apenas desativado.
 - RF-09: Admin ajusta `quantidade_total` por ajuste manual com motivo obrigatório, registrado em `movimentacao` (tipo `ajuste`). O ajuste não pode deixar `total < reservada + em_uso`.
-- RF-10: Catálogo (todos os usuários ativos) com busca por nome e filtros por tipo, local, operante e disponibilidade.
+- RF-10: Catálogo (todos os usuários ativos) com busca por nome e filtros por tipo, local, operante e disponibilidade. Itens **desativados** não aparecem para quem não é admin; o admin os vê com o filtro "incluir desativados".
 - RF-11: O catálogo exibe a quantidade **disponível** (`total − reservada − em_uso`); itens inoperantes aparecem sinalizados e sem opção de solicitar.
-- RF-12: Alerta de estoque mínimo: para itens com `estoque_minimo` definido, sinalizar quando `total − reservada <= estoque_minimo`. Exibido no painel do admin (ver spec-007).
-- RF-13: Detalhe do item mostra aba "Histórico" (auditoria) apenas para admin.
+- RF-12: Alerta de estoque mínimo: para itens com `estoque_minimo` definido, sinalizar quando `total − reservada <= estoque_minimo`. Exibido no painel e no relatório de estoque mínimo do admin (spec-007/RF-02, RF-05 a RF-08).
+- RF-13: Detalhe do item mostra aba "Histórico" (auditoria) apenas para admin (spec-006/RF-13).
+- RF-14: `operante` não muda pelo formulário comum do item; só pelas ações "Marcar inoperante" (motivo opcional) e "Reativar" (**motivo obrigatório**), exclusivas de admin ativo. Ambas são auditadas com o motivo.
 
 ## Regras de negócio
 - RN-01: Somente `admin` ativo escreve em `item`, `tipo_item` e `local`; usuários ativos leem.
@@ -81,10 +82,19 @@ CA-08  Dado um item com movimentações
 CA-09  Dado um insumo com estoque mínimo 5 e disponível 5
        Então o item aparece na lista de "abaixo do mínimo".
 
+CA-10  Dado um item desativado
+       Quando um professor consulta o catálogo (inclusive via API direta)
+       Então o item não aparece; para o admin, aparece com o filtro "incluir desativados".
+
+CA-11  Dado um item inoperante
+       Quando o admin tenta reativá-lo sem motivo
+       Então a operação é rejeitada; com motivo, o item volta a `operante = true` e a auditoria registra o motivo.
+
 ## Fora de escopo
 Importação em lote por planilha, fotos dos itens, QR code/etiquetas.
 
 ## Pontos em aberto
-- **OPEN-01:** Lista fechada de estados (`novo`, `bom`, `regular`, `ruim`) ou texto livre?
-- **OPEN-02:** Importação inicial do inventário existente via CSV é desejada já na primeira versão?
-- **OPEN-03:** Itens desativados somem do catálogo para professores?
+- **OPEN-01 (resolvido em 2026-10-19):** `estado` é lista fechada (`novo`, `bom`, `regular`, `ruim`). Refletido em RF-05.
+- **OPEN-02 (resolvido em 2026-10-19):** Importação por CSV fica fora da v1, coerente com "Fora de escopo".
+- **OPEN-03 (resolvido em 2026-10-19):** Itens desativados somem do catálogo para não-admin; admin vê com filtro. Inoperantes continuam visíveis e sinalizados. Refletido em RF-10 e CA-10.
+- Reativação de inoperante com motivo obrigatório (decisão de spec-005/OPEN-03) refletida em RF-14 e CA-11.
