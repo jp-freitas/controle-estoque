@@ -208,7 +208,6 @@ Prazo de devolução e controle de atraso · multi-escola · app móvel nativo �
 ## Decisões pendentes
 
 Consulte os `OPEN-xx` em cada `spec.md`. Principais:
-- Modelo de entrada de usuários (spec 001, OPEN-01).
 - Expiração de reserva não retirada (spec 004, OPEN-02).
 - Devolução parcial danificada de item com várias unidades (spec 005, OPEN-02).
 - Deploy de produção automático ou manual (constituição, OPEN-01) — *adiado até existir produção*.
