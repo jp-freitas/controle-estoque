@@ -67,14 +67,14 @@ O plano depende de dois comportamentos do Supabase Auth que precisam ser confirm
   - concorrência: dois admins convidando o mesmo e-mail ao mesmo tempo → só um convite — teste na suíte de concorrência (T-06a).
 - [x] **T-14** 🗄️ Migration `001_convite`: tabela `convite`, view/função de situação derivada, RLS (só `select` para admin ativo), RPCs `convidar_usuario` e `cancelar_convite` com `pg_advisory_xact_lock`.
   - RN-05: estender `aplicar_edicao_perfil` (T-12) para recusar matrícula de convite em aberto, com o mesmo lock por matrícula; senão um usuário pode tomar a matrícula de um convidado e o aceite dele falharia (achado na T-12). Teste em T-13 (CA-17).
-- [ ] **T-15** 🧪 pgTAP `001_aceitar_convite.test.sql`:
+- [x] **T-15** 🧪 pgTAP `001_aceitar_convite.test.sql`:
   - **CA-09**: aceite válido cria `profiles` `pendente` com e-mail, nome e perfil do convite; convite vira `aceito`;
   - **CA-10**: convite com mais de 7 dias → "Convite expirado";
   - **CA-11**: convite cancelado → rejeitado;
   - **CA-14**: convite com perfil `admin` → usuário `pendente`, sem poderes até aprovação;
   - **CA-15 / CA-18**: matrícula copiada / ausente sem erro;
   - aceitar duas vezes não cria dois perfis.
-- [ ] **T-16** 🗄️ RPC `aceitar_convite()`.
+- [x] **T-16** 🗄️ RPC `aceitar_convite()`.
 - [ ] **T-17** 🧪 pgTAP `001_hook_cadastro.test.sql` — **CA-01**: hook `before_user_created` rejeita e-mail sem convite em aberto (inclui expirado e cancelado) e aceita e-mail com convite válido.
 - [ ] **T-18** 🗄️ Função do hook + `[auth.hook.before_user_created]` no `config.toml`.
 - [ ] **T-18a** 🗄️ **RF-11**: template do e-mail de convite em pt-BR (achado do T-01). O convite usa o template *magic link* do Auth, que é em inglês por padrão. Criar `supabase/templates/convite.html` (assunto e corpo em pt-BR, link `{{ .ConfirmationURL }}`, aviso de que o convite vale 7 dias e o link 1 h) e apontar `[auth.email.template.magic_link]` no `config.toml` (`subject` + `content_path`). Verificar no Mailpit. Nos projetos remotos, o mesmo template é configurado no painel quando staging/produção forem criados.

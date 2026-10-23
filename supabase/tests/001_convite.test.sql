@@ -3,7 +3,7 @@
 -- supabase/tests/concorrencia/001_convite.test.ts.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(47);
+select plan(48);
 
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0004-0000000000a1', 't-admin@teste.test'),
@@ -69,6 +69,13 @@ select throws_ok($$ select public.convidar_usuario('prof@escola.br', 'X', null) 
   'P0001', 'Já existe um convite em aberto para este e-mail.', 'CA-13: e-mail com convite em aberto');
 select throws_ok($$ select public.convidar_usuario('  Prof@Escola.br ', 'X', null) $$,
   'P0001', 'Já existe um convite em aberto para este e-mail.', 'RN-03: Prof@Escola.br = prof@escola.br');
+
+reset role;
+insert into public.convite (email, nome, convidado_por) values ('Misto@Escola.BR', 'Misto', '00000000-0000-0000-0004-0000000000a1');
+set local role authenticated;
+select pg_temp.como('00000000-0000-0000-0004-0000000000a1');
+select throws_ok($$ select public.convidar_usuario('misto@escola.br', 'X', null) $$,
+  'P0001', 'Já existe um convite em aberto para este e-mail.', 'RN-03: convite gravado com maiúsculas também é reconhecido');
 
 -- CA-17 / RN-05: matrícula --------------------------------------------------
 select throws_ok($$ select public.convidar_usuario('m1@escola.br', 'X', '12345') $$,

@@ -128,13 +128,15 @@ begin
     perform public.travar_matricula(v_matricula);
   end if;
 
+  -- citext com search_path vazio: o operador fica em extensions; sem qualificar,
+  -- o Postgres cai em text = text e passa a diferenciar maiúsculas (RN-03).
   -- "Já tem conta" é profiles, não auth.users: o convidado entra em auth.users
   -- já no envio do e-mail (plan.md → Achados do spike T-01).
-  if exists (select 1 from public.profiles p where p.email = v_email::extensions.citext) then
+  if exists (select 1 from public.profiles p where p.email operator(extensions.=) v_email::extensions.citext) then
     raise exception using errcode = 'P0001', message = 'Já existe uma conta com este e-mail.';
   end if;
   if exists (select 1 from public.convite c
-             where c.email = v_email::extensions.citext and public.convite_em_aberto(c)) then
+             where c.email operator(extensions.=) v_email::extensions.citext and public.convite_em_aberto(c)) then
     raise exception using errcode = 'P0001', message = 'Já existe um convite em aberto para este e-mail.';
   end if;
   if v_matricula is not null and public.matricula_em_uso(v_matricula) then
