@@ -44,6 +44,14 @@ Constraints:
 - **RF-07:** `check (numero_patrimonio is null or quantidade_total <= 1)`; o "= 1 no cadastro" é um trigger `before insert` (CA-01), porque depois da baixa (spec-005) o total pode ir a 0.
 - `estoque_minimo` só para tipo consumível: trigger `before insert or update` consulta `tipo_item.consumivel`.
 - Índices em `tipo_id`, `local_id` e `nome` (busca com `ilike`; `pg_trgm` se ficar lento).
+- `numero_patrimonio`: `trim`, vazio vira `null` (trigger); índice único parcial `item_numero_patrimonio_key`.
+
+### Regras entre item, tipo e local (RN-03 a RN-05, CA-12 a CA-14)
+
+- Trigger `before insert or update` em `item` (`validar_item`): quando o item fica ativo (insert, troca de `tipo_id`/`local_id` ou reativação), lê tipo e local com **`for share`** e rejeita se algum estiver desativado ("Tipo desativado." / "Local desativado."). Também é onde se checam patrimônio = 1 no insert e `estoque_minimo` só para consumível.
+- Trigger `before update` em `tipo_item` e `local`: desativar com itens ativos → "Há N itens ativos neste local. Mova ou desative esses itens antes." (`detail` com a lista); em `tipo_item`, mudar `consumivel` com qualquer item → "Este tipo já tem itens; não é possível mudar se é consumível."
+- Concorrência (RN-05): o `before update` só roda com a linha do tipo/local travada, e o `for share` do item espera esse lock (e vice-versa). Assim, "cadastrar item no local X" e "desativar X" se serializam e o segundo vê o primeiro já confirmado. Teste em `supabase/tests/concorrencia/002_catalogo.test.ts`.
+- Com essa invariante, item ativo implica tipo e local ativos: a visibilidade para não-admin depende só de `item.ativo`.
 
 ### `movimentacao` (P-05)
 Criada aqui porque o ajuste (RF-09) é a primeira movimentação; 004 e 005 reutilizam.
@@ -63,11 +71,13 @@ Imutável: sem `grant update/delete` para ninguém; `select` só para admin ativ
 
 ## Permissões e escrita (RN-01, CA-06)
 
-- RLS em `tipo_item`, `local`, `item`: `select` para `usuario_ativo()`; `insert/update/delete` só `eh_admin_ativo()`.
+- RLS em `tipo_item`, `local`, `item`: `select` para `eh_admin_ativo()` ou (`usuario_ativo()` e `ativo`) — desativados ficam invisíveis para não-admin também pela API direta (CA-10); `insert/update/delete` só `eh_admin_ativo()`.
+  - Atenção para a spec 003: o histórico de solicitações do professor não pode depender de ler `item` desativado (guardar o nome na linha da solicitação ou expor por view/RPC própria).
 - CRUD de cadastro é **direto pela API** (não precisa de RPC: não mexe em estoque), mas:
   - `revoke insert (quantidade_reservada, quantidade_em_uso, operante)` e `revoke update (quantidade_total, quantidade_reservada, quantidade_em_uso, operante)` de `authenticated` (P-01, RF-06, RF-14);
   - `quantidade_total` entra só no `insert` (CA-03); depois só por `ajustar_quantidade_item`.
 - Exclusão de item com movimentação ou de tipo/local em uso falha com `23503`; o front mostra "Possui histórico — desative" e oferece desativar (CA-08).
+- Como o CRUD é direto, violações de unicidade chegam como `23505`. `erroRpc.ts` (já existe, spec 001) ganha um mapa por nome de constraint: `tipo_item_nome_key` → "Já existe um tipo com este nome.", `local_nome_key` → "Já existe um local com este nome.", `item_numero_patrimonio_key` → "Número de patrimônio já cadastrado." (CA-02).
 
 ## RPCs
 
@@ -76,6 +86,8 @@ Imutável: sem `grant update/delete` para ninguém; `select` só para admin ativ
 
 ## Auditoria (RN-02, CA-07)
 
+Nova migration faz `create or replace` de `auditar()` (spec 001) acrescentando a regra de origem: com `app.origem = 'movimentacao'` e `campos_alterados` contido em `{quantidade_total, quantidade_reservada, quantidade_em_uso}`, não grava. Em `item`, `tipo_item` e `local` o trigger é ligado sem argumentos (todas as colunas, menos `atualizado_em`).
+
 Esta spec liga o trigger `auditar()` em `item`, `tipo_item` e `local` (spec-006/RF-02). Regras do trigger (spec-006/RF-05, RF-17):
 - update que só mexe em contadores/`atualizado_em` **com** `app.origem = 'movimentacao'` não é auditado — é o caso das RPCs das specs 004 e 005;
 - `ajustar_quantidade_item` **não** marca a origem, então o ajuste manual é auditado, com `motivo` (spec-006/CA-06);
@@ -83,7 +95,7 @@ Esta spec liga o trigger `auditar()` em `item`, `tipo_item` e `local` (spec-006/
 
 ## Leitura
 
-- View `catalogo` (`security_invoker = true`): item + tipo + local + `disponivel = total − reservada − em_uso`. Não-admin vê só `item.ativo` (e tipo/local ativos); admin vê tudo e o front filtra "incluir desativados" (RF-10, RF-11, CA-10). Inoperante aparece com `operante = false` (CA-05).
+- View `catalogo` (`security_invoker = true`): item + tipo + local + `disponivel = total − reservada − em_uso`. A visibilidade vem da RLS de `item` (não-admin vê só ativos; ver RN-03); admin vê tudo e o front filtra "incluir desativados" (RF-10, RF-11, CA-10). Inoperante aparece com `operante = false` (CA-05).
 - Estoque mínimo (RF-12, CA-09) e o painel ficam na **spec 007** (relatório `estoque_minimo`); aqui só existem os dados (`estoque_minimo`, consumível).
 - Aba Histórico (RF-13) é entregue pela **spec 006** (RF-13), que lê `auditoria`.
 

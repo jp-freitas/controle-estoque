@@ -11,7 +11,7 @@ Legenda: 🧪 teste primeiro · 🗄️ banco · 🖥️ front · 🔍 validaç�
 
 ## Fase 1 — Tipos e locais (RF-01 a RF-04)
 
-- [ ] **T-01** 🧪 pgTAP `002_tipo_local.test.sql`: estrutura e RLS de `tipo_item` e `local`; os três tipos iniciais existem após a migration, com `consumivel` correto (RF-01, RF-02); nome único (citext); tipo em uso não é excluído, só desativado (RF-03); caminho negado para solicitante, pendente e inativo.
+- [ ] **T-01** 🧪 pgTAP `002_tipo_local.test.sql`: estrutura e RLS de `tipo_item` e `local`; os três tipos iniciais existem após a migration, com `consumivel` correto (RF-01, RF-02); nome único (citext); tipo em uso não é excluído, só desativado (RF-03); **CA-13** (desativar tipo/local com itens ativos → rejeitado) e **CA-14** (`consumivel` de tipo com itens); desativados invisíveis para não-admin; caminho negado para solicitante, pendente e inativo.
 - [ ] **T-02** 🗄️ Migration `002_catalogo` (parte 1): `tipo_item` com os três tipos inseridos na migration, `local`, RLS (`select` para ativo, escrita só admin).
 
 ## Fase 2 — Itens e movimentação (RF-05 a RF-09, RF-14)
@@ -22,7 +22,8 @@ Legenda: 🧪 teste primeiro · 🗄️ banco · 🖥️ front · 🔍 validaç�
   - CHECK P-03; `estoque_minimo` rejeitado para tipo não consumível; enum `estado_item`;
   - **CA-06**: solicitante cria/edita/exclui (inclusive API direta) → negado;
   - `update` direto em `quantidade_total`/`reservada`/`em_uso`/`operante` → negado até para admin (RF-06, RF-14);
-  - **CA-08**: excluir item com movimentação → erro de FK (`23503`).
+  - **CA-08**: excluir item com movimentação → erro de FK (`23503`);
+  - **CA-12**: cadastrar, mover ou reativar item em tipo/local desativado → rejeitado.
 - [ ] **T-04** 🗄️ Migration `002_catalogo` (parte 2): enum `estado_item`, `item` com constraints e triggers (patrimônio = 1 no insert, `estoque_minimo` só consumível), índices, RLS e revokes por coluna; enum `tipo_movimentacao` e tabela `movimentacao` imutável.
 - [ ] **T-05** 🧪 pgTAP `002_ajuste.test.sql`:
   - **CA-04**: reservada 3 + em_uso 2, ajuste para 4 → rejeitado, nada muda;
@@ -50,12 +51,13 @@ Legenda: 🧪 teste primeiro · 🗄️ banco · 🖥️ front · 🔍 validaç�
   - **CA-10**: desativado não aparece para professor (inclusive API direta); admin vê;
   - item de tipo ou local desativado some para professor.
 - [ ] **T-12** 🗄️ View `catalogo` (`security_invoker = true`).
+- [ ] **T-12a** 🧪 Concorrência (Vitest + `pg`, `concorrencia/002_catalogo.test.ts`) — **RN-05**: cadastrar item num local × desativar o local; mudar `consumivel` × cadastrar item do tipo. Validar por mutação (sem o `for share`, o teste falha).
 - [ ] **T-13** 🔍 `supabase db reset` + `supabase test db`; revisão manual: RLS em toda tabela nova, `search_path` fixo, `grant execute` só para `authenticated`; `seed.sql` com locais e itens de exemplo (insumo com mínimo, ferramenta com várias unidades, máquina com patrimônio).
 - [ ] **T-14** 🗄️ `npm run db:types`.
 
 ## Fase 4 — Front
 
-- [ ] **T-15** 🖥️ `web/src/shared/lib/erroRpc.ts` (convenção do `CLAUDE.md`): converte `PostgrestError` em mensagem + lista por item; `23503` → "Possui histórico — desative". Teste Vitest.
+- [ ] **T-15** 🖥️ `web/src/shared/lib/erroRpc.ts` já existe (spec 001); acrescentar `23505` com mapa por constraint (tipo/local com nome repetido, patrimônio duplicado — CA-02). Teste Vitest.
 - [ ] **T-16** 🖥️ **RF-10, RF-11, CA-05**: `features/catalogo/` com busca, filtros (tipo, local, operante, disponibilidade), badge "Inoperante" sem botão de adicionar; hook público `useCatalogo` no `index.ts`. Testes Vitest dos filtros e da sinalização.
 - [ ] **T-17** 🖥️ **RF-03, RF-04**: `features/itens-admin/` — telas de tipos e locais (criar, editar, desativar).
 - [ ] **T-18** 🖥️ **RF-05, RF-07, RF-08, CA-08**: formulário de item (Zod; patrimônio ⇒ quantidade 1; `estoque_minimo` só para tipo consumível — spec-007/RF-08); exclusão negada oferece "Desativar".
@@ -86,3 +88,7 @@ Legenda: 🧪 teste primeiro · 🗄️ banco · 🖥️ front · 🔍 validaç�
 | CA-09 | spec 007 (T-02 de lá) |
 | CA-10 | T-11 |
 | CA-11 | T-07 |
+| CA-12 | T-03 |
+| CA-13 | T-01 |
+| CA-14 | T-01 |
+| RN-05 | T-12a |
