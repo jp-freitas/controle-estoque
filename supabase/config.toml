@@ -217,6 +217,11 @@ web3 = 30
 # provider = "hcaptcha"
 # secret = ""
 
+# spec-001 T-18 / RF-03: cadastro só por convite (função na migration hook_cadastro_por_convite).
+[auth.hook.before_user_created]
+enabled = true
+uri = "pg-functions://postgres/public/validar_cadastro_por_convite"
+
 [auth.email]
 # Allow/disallow new user signups via email to your project.
 enable_signup = true
@@ -243,6 +248,11 @@ otp_expiry = 3600
 # pass = "env(SENDGRID_API_KEY)"
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
+
+# spec-001 T-18a / RF-11: o convite chega pelo template "magic link" (signInWithOtp).
+[auth.email.template.magic_link]
+subject = "Convite para o Controle de Inventário"
+content_path = "./supabase/templates/convite.html"
 
 # Uncomment to customize email template
 # [auth.email.template.invite]
