@@ -1,0 +1,2 @@
+# Caches que o Vitest grava ao rodar a suíte de concorrência com root na raiz (spec-001/T-06a)
+node_modules/

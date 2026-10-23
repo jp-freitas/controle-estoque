@@ -31,7 +31,7 @@ O plano depende de dois comportamentos do Supabase Auth que precisam ser confirm
   - funções auxiliares `eh_admin_ativo()` e `usuario_ativo()` (`SECURITY DEFINER`, `search_path` fixo) usadas pelas políticas.
 - [x] **T-04** 🧪 pgTAP `001_auditoria.test.sql` — **RN-02/CA-03, CA-06**: mudança de `perfil`/`status` grava linha em `auditoria` com antes/depois, autor e motivo (`app.motivo`), conforme `plan.md` → Auditoria; cobre também spec-006 CA-07, CA-08, CA-11 a CA-13 no que toca `profiles`; `update`/`delete` em `auditoria` é negado inclusive para admin.
 - [x] **T-05** 🗄️ Trigger de auditoria em `profiles` (perfil/status) — base reutilizada pela spec 002 (`item`, `tipo_item`, `local`).
-- [ ] **T-06a** 🧪 Suíte de concorrência: `supabase/tests/concorrencia/` com Vitest + `pg` (devDependency em `web/`), helper para abrir duas sessões autenticadas como usuários diferentes contra o Postgres local, script `npm run test:db:concorrencia` (ver `CLAUDE.md` → Banco). Usada por T-09, T-13 e pelas specs 004/005.
+- [x] **T-06a** 🧪 Suíte de concorrência: `supabase/tests/concorrencia/` com Vitest + `pg` (devDependency em `web/`), helper para abrir duas sessões autenticadas como usuários diferentes contra o Postgres local, script `npm run test:db:concorrencia` (ver `CLAUDE.md` → Banco). Usada por T-09, T-13 e pelas specs 004/005.
 - [x] **T-06** 🗄️ `seed.sql`: primeiro admin (`auth.users` + `profiles` `admin`/`ativo`) e um solicitante de exemplo de cada status, com senha conhecida só para dev (RN-01).
 
 ## Fase 2 — RLS e gestão de usuários (RF-04 a RF-07, RF-09, RF-15, RF-16)
