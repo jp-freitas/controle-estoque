@@ -86,7 +86,7 @@ O plano depende de dois comportamentos do Supabase Auth que precisam ser confirm
 
 Estrutura em `web/src/features/auth/` e `web/src/features/usuarios/` (`components`, `hooks`, `api`, `schemas`, `types`). Só a camada `api` usa o cliente Supabase.
 
-- [ ] **T-21** 🖥️ Sessão e perfil: provider/hook `useSessao` (sessão do Auth + `profiles` do usuário), com teste Vitest.
+- [x] **T-21** 🖥️ Sessão e perfil: provider/hook `useSessao` (sessão do Auth + `profiles` do usuário), com teste Vitest.
 - [ ] **T-22** 🖥️ **RF-01**: telas de login, logout e recuperação de senha (`resetPasswordForEmail` com `redirectTo = window.location.origin`), Zod com mensagens em pt-BR. Não há tela de cadastro (RF-03).
 - [ ] **T-23** 🖥️ **RF-04 / RF-08**: guarda de rotas por status e perfil; telas "Aguardando liberação" e "Acesso desativado". Teste Vitest de cada caso.
 - [ ] **T-24** 🖥️ **RF-11**: tela `/primeiro-acesso` (definir senha → `aceitar_convite()`), com mensagens para convite expirado/cancelado.
