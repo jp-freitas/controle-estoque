@@ -20,7 +20,7 @@ Professor solicita → Sistema valida disponibilidade → Admin aprova → Retir
 - **Banco e autenticação:** Supabase (Postgres, Auth, RLS)
 - **Regras de negócio:** funções RPC em Postgres
 - **Front-end:** React, TypeScript, Vite, TanStack Query, React Hook Form, Zod, Tailwind
-- **Hospedagem:** Vercel (front estático) + Supabase (staging e produção planejados; hoje só há ambiente local)
+- **Hospedagem:** Vercel (front estático) + Supabase (local e staging/homologação em uso; produção planejada)
 
 ## Como o projeto é conduzido
 
