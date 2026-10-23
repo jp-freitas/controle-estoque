@@ -106,3 +106,42 @@ O modelo da auditoria é da **spec 006** (RF-01 a RF-12, RF-17). O **registro** 
   - em `item`: se só mudaram contadores/`atualizado_em` e `current_setting('app.origem', true) = 'movimentacao'`, não grava (RF-05);
   - grava `motivo = nullif(current_setting('app.motivo', true), '')` (RF-17);
   - nunca copia colunas fora da tabela auditada (RF-09).
+
+## Como foi implementado (2026-10-23)
+
+Decisões de implementação tomadas durante a entrega, além do que está acima.
+
+### Banco
+
+| Migration | Conteúdo |
+|---|---|
+| `perfis_e_auditoria` | enums, `profiles`, `auditoria` imutável, `eh_admin_ativo()`, `usuario_ativo()`, `definir_atualizado_em()` |
+| `auditar_profiles` | trigger genérico `auditar(colunas…)`; em `profiles` só `perfil`/`status` |
+| `profiles_rls` | `select` da própria linha ou admin ativo; nenhuma escrita direta |
+| `gestao_usuarios` | `alterar_status_usuario`, `alterar_perfil_usuario` |
+| `editar_perfil` | `atualizar_meu_perfil`, `atualizar_usuario` |
+| `convite` | `convite`, view `convite_situacao`, `convidar_usuario`, `cancelar_convite`; edição de perfil passa a checar matrícula de convite em aberto |
+| `aceitar_convite` | `aceitar_convite()` |
+| `hook_cadastro_por_convite` | `validar_cadastro_por_convite(event)` |
+
+- **Funções internas** (`preparar_alteracao_usuario`, `garantir_admin_ativo`, `aplicar_edicao_perfil`, `matricula_em_uso`, `travar_email_convite`, `travar_matricula`): `execute` revogado de `anon`/`authenticated`; só as RPCs `SECURITY DEFINER` as chamam.
+- **RF-07 / P-04:** alterar perfil/status trava primeiro os admins ativos (`FOR UPDATE` por `id`) e só depois confere se o autor ainda é admin. Teste de concorrência validado por mutação (sem a trava, falha).
+- **RF-14 / RN-05:** locks consultivos `pg_advisory_xact_lock(1001, hash(e-mail))` e `(1002, hash(matrícula))`, sempre nessa ordem. Também validados por mutação.
+- **CA-05:** o único admin ativo que tenta se rebaixar/inativar recebe "Você é o único administrador ativo…"; com outros admins, a mensagem é a de RF-06.
+- **`aceitar_convite()` repetido** devolve o perfil existente (clique duplo, recarregar). O e-mail vem de `auth.users` pelo `auth.uid()`, nunca de parâmetro.
+- **`citext` com `search_path = ''`:** o operador `=` do `citext` fica em `extensions`; sem qualificar, o Postgres cai em `text = text` e diferencia maiúsculas. Comparações de e-mail usam `operator(extensions.=)`.
+- **Regras transversais** em `supabase/tests/000_seguranca.test.sql`: RLS em toda tabela, `search_path` fixo em toda `SECURITY DEFINER`, `anon` sem `execute` nelas, views com `security_invoker`. Vale para as próximas specs.
+- **Suíte de concorrência** (`supabase/tests/concorrencia/`, Vitest + `pg`): sessões `authenticated` reais com `request.jwt.claims`. Os registros de auditoria que ela gera ficam no banco local até o próximo `db reset`.
+
+### Front
+
+- `features/auth`: sessão (`SessaoProvider`/`useSessao`), login, recuperação/redefinição de senha, primeiro acesso, telas de status e guardas `RequerSessao` → `RequerAtivo` → `RequerAdmin`. Expõe só o necessário em `index.ts`.
+- `features/usuarios`: convites, usuários e meu perfil; importa de `auth` só a API pública.
+- Convidar = `convidar_usuario` + `signInWithOtp`. Se o e-mail falhar, o convite fica registrado e a tela orienta a reenviar.
+- `<select>` nativo nos formulários (simples de testar e acessível); diálogos via `useDialogo`, que mantém o conteúdo durante a animação de saída.
+- Testes de front simulam a camada `api`; o cliente Supabase real lança erro se usado em teste.
+- E2E (`web/e2e/001-convite.spec.ts`) roda contra a stack local; entra no CI com a spec-005/T-15.
+
+### Verificação de RLS (T-29)
+
+Com tokens reais de solicitante ativo, pendente e anônimo, pela API REST: 59 tentativas (ler convites/auditoria/perfis de outros, `PATCH`/`POST`/`DELETE` diretos, RPCs de admin, funções internas e o hook) — todas negadas; o solicitante lê só a própria linha de `profiles`.

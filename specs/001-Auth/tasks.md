@@ -97,7 +97,7 @@ Estrutura em `web/src/features/auth/` e `web/src/features/usuarios/` (`component
 ## Fase 5 — E2E e fechamento
 
 - [x] **T-28** 🧪 Playwright `e2e/001-convite.spec.ts`: admin convida → e-mail no Mailpit → convidado define senha → vê "aguardando liberação" → admin aprova → convidado entra.
-- [ ] **T-29** 🔍 Teste manual de RLS com token comum (CLAUDE.md, Segurança): com o token de um solicitante, tentar ler `convite`, ler outros `profiles` e chamar as RPCs de admin pela API REST.
+- [x] **T-29** 🔍 Teste manual de RLS com token comum (CLAUDE.md, Segurança): com o token de um solicitante, tentar ler `convite`, ler outros `profiles` e chamar as RPCs de admin pela API REST.
 - [ ] **T-30** 🔍 CI verde: lint, Prettier, `typecheck`, Vitest, `supabase test db` (Q-03).
 - [ ] **T-31** 📝 Atualizar `spec.md`/`plan.md` com o que foi entregue (inclusive achados do T-01) e abrir PR `spec-001-auth` citando os CA cobertos.
 
