@@ -58,14 +58,14 @@ O plano depende de dois comportamentos do Supabase Auth que precisam ser confirm
 
 ## Fase 3 — Convite (RF-03, RF-10 a RF-14, RN-03 a RN-05)
 
-- [ ] **T-13** 🧪 pgTAP `001_convite.test.sql`:
+- [x] **T-13** 🧪 pgTAP `001_convite.test.sql`:
   - **CA-08**: admin cria convite com e-mail, nome, matrícula e perfil; situação `enviado`, validade 7 dias;
   - **CA-12**: solicitante/pendente/inativo não criam, listam, reenviam nem cancelam;
   - **CA-13**: e-mail com conta ou com convite em aberto → rejeitado; e-mail com convite **expirado** → permitido;
   - **CA-17**: matrícula de usuário ou de convite em aberto → rejeitada;
   - RN-03: `Prof@Escola.br` e `prof@escola.br` são o mesmo e-mail;
   - concorrência: dois admins convidando o mesmo e-mail ao mesmo tempo → só um convite — teste na suíte de concorrência (T-06a).
-- [ ] **T-14** 🗄️ Migration `001_convite`: tabela `convite`, view/função de situação derivada, RLS (só `select` para admin ativo), RPCs `convidar_usuario` e `cancelar_convite` com `pg_advisory_xact_lock`.
+- [x] **T-14** 🗄️ Migration `001_convite`: tabela `convite`, view/função de situação derivada, RLS (só `select` para admin ativo), RPCs `convidar_usuario` e `cancelar_convite` com `pg_advisory_xact_lock`.
   - RN-05: estender `aplicar_edicao_perfil` (T-12) para recusar matrícula de convite em aberto, com o mesmo lock por matrícula; senão um usuário pode tomar a matrícula de um convidado e o aceite dele falharia (achado na T-12). Teste em T-13 (CA-17).
 - [ ] **T-15** 🧪 pgTAP `001_aceitar_convite.test.sql`:
   - **CA-09**: aceite válido cria `profiles` `pendente` com e-mail, nome e perfil do convite; convite vira `aceito`;
