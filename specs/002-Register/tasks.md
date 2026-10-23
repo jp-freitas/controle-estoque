@@ -66,8 +66,8 @@ Legenda: 🧪 teste primeiro · 🗄️ banco · 🖥️ front · 🔍 validaç�
 ## Fase 5 — Fechamento
 
 - [x] **T-20** 🔍 Teste manual com token de solicitante: tentar `insert`/`update`/`delete` em `item`, `tipo_item`, `local` e `update` nos contadores pela API REST (CA-06).
-- [ ] **T-21** 🔍 CI verde (lint, Prettier, `typecheck`, Vitest, `supabase test db`).
-- [ ] **T-22** 📝 Atualizar `spec.md`/`plan.md` com o entregue e abrir PR `spec-002-catalogo`.
+- [x] **T-21** 🔍 CI verde (lint, Prettier, `typecheck`, Vitest, `supabase test db`).
+- [x] **T-22** 📝 Atualizar `spec.md`/`plan.md` com o entregue e abrir PR `spec-002-catalogo`.
 
 > RF-12 (estoque mínimo, CA-09) é entregue e testado na spec 007; RF-13 (aba Histórico) na spec 006.
 
