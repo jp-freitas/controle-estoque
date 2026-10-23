@@ -78,7 +78,7 @@ O plano depende de dois comportamentos do Supabase Auth que precisam ser confirm
 - [x] **T-17** 🧪 pgTAP `001_hook_cadastro.test.sql` — **CA-01**: hook `before_user_created` rejeita e-mail sem convite em aberto (inclui expirado e cancelado) e aceita e-mail com convite válido.
 - [x] **T-18** 🗄️ Função do hook + `[auth.hook.before_user_created]` no `config.toml`.
 - [x] **T-18a** 🗄️ **RF-11**: template do e-mail de convite em pt-BR (achado do T-01). O convite usa o template *magic link* do Auth, que é em inglês por padrão. Criar `supabase/templates/convite.html` (assunto e corpo em pt-BR, link `{{ .ConfirmationURL }}`, aviso de que o convite vale 7 dias e o link 1 h) e apontar `[auth.email.template.magic_link]` no `config.toml` (`subject` + `content_path`). Verificar no Mailpit. Nos projetos remotos, o mesmo template é configurado no painel quando staging/produção forem criados.
-- [ ] **T-18b** 🗄️ **RF-01**: template do e-mail de recuperação de senha em pt-BR (decisão de 2026-10-23). `supabase/templates/recuperacao.html` + `[auth.email.template.recovery]` no `config.toml`; verificar no Mailpit junto com a T-22. Remoto: painel de cada projeto.
+- [x] **T-18b** 🗄️ **RF-01**: template do e-mail de recuperação de senha em pt-BR (decisão de 2026-10-23). `supabase/templates/recuperacao.html` + `[auth.email.template.recovery]` no `config.toml`; verificar no Mailpit junto com a T-22. Remoto: painel de cada projeto.
 - [x] **T-19** 🔍 Rodar `supabase db reset` + `supabase test db` completos; `get_advisors` não se aplica (só local) — revisar manualmente: RLS em todas as tabelas novas, `search_path` fixo em toda `SECURITY DEFINER`, `grant execute` só para `authenticated`.
 - [x] **T-20** 🗄️ `npm run db:types` e commit de `web/src/types/database.ts`.
 
@@ -87,9 +87,9 @@ O plano depende de dois comportamentos do Supabase Auth que precisam ser confirm
 Estrutura em `web/src/features/auth/` e `web/src/features/usuarios/` (`components`, `hooks`, `api`, `schemas`, `types`). Só a camada `api` usa o cliente Supabase.
 
 - [x] **T-21** 🖥️ Sessão e perfil: provider/hook `useSessao` (sessão do Auth + `profiles` do usuário), com teste Vitest.
-- [ ] **T-22** 🖥️ **RF-01**: telas de login, logout e recuperação de senha (`resetPasswordForEmail` com `redirectTo = window.location.origin`), Zod com mensagens em pt-BR. Não há tela de cadastro (RF-03).
-- [ ] **T-23** 🖥️ **RF-04 / RF-08**: guarda de rotas por status e perfil; telas "Aguardando liberação" e "Acesso desativado". Teste Vitest de cada caso.
-- [ ] **T-24** 🖥️ **RF-11**: tela `/primeiro-acesso` (definir senha → `aceitar_convite()`), com mensagens para convite expirado/cancelado.
+- [x] **T-22** 🖥️ **RF-01**: telas de login, logout e recuperação de senha (`resetPasswordForEmail` com `redirectTo = window.location.origin`), Zod com mensagens em pt-BR. Não há tela de cadastro (RF-03).
+- [x] **T-23** 🖥️ **RF-04 / RF-08**: guarda de rotas por status e perfil; telas "Aguardando liberação" e "Acesso desativado". Teste Vitest de cada caso.
+- [x] **T-24** 🖥️ **RF-11**: tela `/primeiro-acesso` (definir senha → `aceitar_convite()`), com mensagens para convite expirado/cancelado.
 - [ ] **T-25** 🖥️ **RF-10, RF-13**: área do admin "Convites": formulário (e-mail, nome, matrícula opcional, perfil padrão `solicitante`), lista com situação, reenviar (só válido) e cancelar.
 - [ ] **T-26** 🖥️ **RF-05, RF-09, RF-16**: área do admin "Usuários": lista com filtros por status/perfil, aprovar, inativar/reativar, promover/rebaixar, editar nome/matrícula; erros das RPCs exibidos como vêm do banco.
 - [ ] **T-27** 🖥️ **RF-15**: tela "Meu perfil" (nome e matrícula editáveis; e-mail, perfil e status só leitura).

@@ -254,6 +254,11 @@ otp_expiry = 3600
 subject = "Convite para o Controle de Inventário"
 content_path = "./supabase/templates/convite.html"
 
+# spec-001 T-18b / RF-01: recuperação de senha em pt-BR.
+[auth.email.template.recovery]
+subject = "Redefinir sua senha — Controle de Inventário"
+content_path = "./supabase/templates/recuperacao.html"
+
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"
