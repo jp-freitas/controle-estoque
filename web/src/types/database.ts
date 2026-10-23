@@ -57,6 +57,78 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"item": {
+                  Row: {
+                    "ativo": boolean,"atualizado_em": string,"criado_em": string,"descricao": string | null,"estado": Database["public"]['Enums']["estado_item"] | null,"estoque_minimo": number | null,"id": string,"local_id": string,"nome": string,"numero_patrimonio": string | null,"operante": boolean,"quantidade_em_uso": number,"quantidade_reservada": number,"quantidade_total": number,"tipo_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "ativo"?: boolean,"atualizado_em"?: string,"criado_em"?: string,"descricao"?: string | null,"estado"?: Database["public"]['Enums']["estado_item"] | null,"estoque_minimo"?: number | null,"id"?: string,"local_id": string,"nome": string,"numero_patrimonio"?: string | null,"operante"?: boolean,"quantidade_em_uso"?: number,"quantidade_reservada"?: number,"quantidade_total": number,"tipo_id": string
+                  }
+                  Update: {
+                    "ativo"?: boolean,"atualizado_em"?: string,"criado_em"?: string,"descricao"?: string | null,"estado"?: Database["public"]['Enums']["estado_item"] | null,"estoque_minimo"?: number | null,"id"?: string,"local_id"?: string,"nome"?: string,"numero_patrimonio"?: string | null,"operante"?: boolean,"quantidade_em_uso"?: number,"quantidade_reservada"?: number,"quantidade_total"?: number,"tipo_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "item_local_id_fkey"
+      columns: ["local_id"]
+isOneToOne: false
+      referencedRelation: "local"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "item_tipo_id_fkey"
+      columns: ["tipo_id"]
+isOneToOne: false
+      referencedRelation: "tipo_item"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"local": {
+                  Row: {
+                    "ativo": boolean,"descricao": string | null,"id": string,"nome": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "ativo"?: boolean,"descricao"?: string | null,"id"?: string,"nome": string
+                  }
+                  Update: {
+                    "ativo"?: boolean,"descricao"?: string | null,"id"?: string,"nome"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"movimentacao": {
+                  Row: {
+                    "criado_em": string,"id": number,"item_id": string,"motivo": string | null,"quantidade": number,"solicitacao_id": string | null,"tipo": Database["public"]['Enums']["tipo_movimentacao"],"usuario_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "criado_em"?: string,"id"?: never,"item_id": string,"motivo"?: string | null,"quantidade": number,"solicitacao_id"?: string | null,"tipo": Database["public"]['Enums']["tipo_movimentacao"],"usuario_id": string
+                  }
+                  Update: {
+                    "criado_em"?: string,"id"?: never,"item_id"?: string,"motivo"?: string | null,"quantidade"?: number,"solicitacao_id"?: string | null,"tipo"?: Database["public"]['Enums']["tipo_movimentacao"],"usuario_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "movimentacao_item_id_fkey"
+      columns: ["item_id"]
+isOneToOne: false
+      referencedRelation: "catalogo"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "movimentacao_item_id_fkey"
+      columns: ["item_id"]
+isOneToOne: false
+      referencedRelation: "item"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "movimentacao_usuario_id_fkey"
+      columns: ["usuario_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"profiles": {
                   Row: {
                     "atualizado_em": string,"criado_em": string,"email": string,"id": string,"matricula": string | null,"nome": string,"perfil": Database["public"]['Enums']["perfil"],"status": Database["public"]['Enums']["status_usuario"]
@@ -71,10 +143,44 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"tipo_item": {
+                  Row: {
+                    "ativo": boolean,"consumivel": boolean,"id": string,"nome": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "ativo"?: boolean,"consumivel": boolean,"id"?: string,"nome": string
+                  }
+                  Update: {
+                    "ativo"?: boolean,"consumivel"?: boolean,"id"?: string,"nome"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 }
           }
           Views: {
-            "convite_situacao": {
+            "catalogo": {
+                  Row: {
+                    "ativo": boolean | null,"atualizado_em": string | null,"consumivel": boolean | null,"descricao": string | null,"disponivel": number | null,"estado": Database["public"]['Enums']["estado_item"] | null,"estoque_minimo": number | null,"id": string | null,"local_id": string | null,"local_nome": string | null,"nome": string | null,"numero_patrimonio": string | null,"operante": boolean | null,"quantidade_em_uso": number | null,"quantidade_reservada": number | null,"quantidade_total": number | null,"tipo_id": string | null,"tipo_nome": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "item_local_id_fkey"
+      columns: ["local_id"]
+isOneToOne: false
+      referencedRelation: "local"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "item_tipo_id_fkey"
+      columns: ["tipo_id"]
+isOneToOne: false
+      referencedRelation: "tipo_item"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"convite_situacao": {
                   Row: {
                     "aceito_em": string | null,"cancelado_em": string | null,"convidado_por": string | null,"criado_em": string | null,"email": string | null,"expira_em": string | null,"id": string | null,"matricula": string | null,"nome": string | null,"perfil": Database["public"]['Enums']["perfil"] | null,"situacao": string | null
                   }
@@ -111,6 +217,54 @@ isOneToOne: false
                           SetofOptions: {
         from: "*"
         to: "profiles"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"ajustar_quantidade_item":
+{ Args: { "p_item_id": string,"p_motivo": string,"p_nova_quantidade": number }; Returns: {
+              "ativo": boolean,
+"atualizado_em": string,
+"criado_em": string,
+"descricao": string | null,
+"estado": Database["public"]['Enums']["estado_item"] | null,
+"estoque_minimo": number | null,
+"id": string,
+"local_id": string,
+"nome": string,
+"numero_patrimonio": string | null,
+"operante": boolean,
+"quantidade_em_uso": number,
+"quantidade_reservada": number,
+"quantidade_total": number,
+"tipo_id": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "item"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"alterar_operancia_item":
+{ Args: { "p_item_id": string,"p_motivo"?: string,"p_operante": boolean }; Returns: {
+              "ativo": boolean,
+"atualizado_em": string,
+"criado_em": string,
+"descricao": string | null,
+"estado": Database["public"]['Enums']["estado_item"] | null,
+"estoque_minimo": number | null,
+"id": string,
+"local_id": string,
+"nome": string,
+"numero_patrimonio": string | null,
+"operante": boolean,
+"quantidade_em_uso": number,
+"quantidade_reservada": number,
+"quantidade_total": number,
+"tipo_id": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "item"
         isOneToOne: true
         isSetofReturn: false
       } },
@@ -280,7 +434,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "perfil": "admin"|"solicitante","status_usuario": "pendente"|"ativo"|"inativo"
+            "estado_item": "novo"|"bom"|"regular"|"ruim","perfil": "admin"|"solicitante","status_usuario": "pendente"|"ativo"|"inativo","tipo_movimentacao": "ajuste"|"reserva"|"liberacao_reserva"|"retirada"|"devolucao"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -400,7 +554,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "perfil": ["admin", "solicitante"],"status_usuario": ["pendente", "ativo", "inativo"]
+            "estado_item": ["novo", "bom", "regular", "ruim"],"perfil": ["admin", "solicitante"],"status_usuario": ["pendente", "ativo", "inativo"],"tipo_movimentacao": ["ajuste", "reserva", "liberacao_reserva", "retirada", "devolucao"]
           }
         }
 } as const

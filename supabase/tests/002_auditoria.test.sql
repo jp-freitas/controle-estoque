@@ -11,8 +11,11 @@ insert into public.profiles (id, nome, email, perfil, status) values
 create function pg_temp.como(uid uuid) returns void language sql as $$
   select set_config('request.jwt.claims', json_build_object('sub', uid, 'role', 'authenticated')::text, true);
 $$;
+-- só a auditoria gerada por este teste (o seed também grava)
+create temp table inicio as select coalesce(max(id), 0) as id from public.auditoria;
+grant select on inicio to authenticated;
 create function pg_temp.aud(p_tabela text) returns setof public.auditoria language sql as $$
-  select * from public.auditoria where tabela = p_tabela order by id;
+  select * from public.auditoria where tabela = p_tabela and id > (select id from inicio) order by id;
 $$;
 
 set local role authenticated;

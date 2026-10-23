@@ -48,19 +48,19 @@ select throws_ok($$ insert into public.tipo_item (nome, consumivel) values ('KIT
   '23505', null, 'nome de tipo único sem diferenciar maiúsculas');
 select throws_ok($$ insert into public.tipo_item (nome, consumivel) values ('  ', true) $$,
   '23514', null, 'nome de tipo em branco é rejeitado');
-select lives_ok($$ insert into public.local (nome, descricao) values ('Laboratório 1', 'Bloco B') $$,
+select lives_ok($$ insert into public.local (nome, descricao) values ('T-Laboratório 1', 'Bloco B') $$,
   'RF-04: admin cadastra local');
-select throws_ok($$ insert into public.local (nome) values ('laboratório 1') $$,
+select throws_ok($$ insert into public.local (nome) values ('t-laboratório 1') $$,
   '23505', null, 'RF-04: nome de local único sem diferenciar maiúsculas');
-select lives_ok($$ insert into public.local (nome) values ('Almoxarifado') $$, 'RF-04: local sem descrição');
-select lives_ok($$ update public.local set descricao = 'Bloco C' where nome = 'Laboratório 1' $$,
+select lives_ok($$ insert into public.local (nome) values ('T-Almoxarifado') $$, 'RF-04: local sem descrição');
+select lives_ok($$ update public.local set descricao = 'Bloco C' where nome = 'T-Laboratório 1' $$,
   'RF-04: admin edita local');
-select is((select descricao from public.local where nome = 'Laboratório 1'), 'Bloco C', 'RF-04: edição gravada');
-select lives_ok($$ update public.local set ativo = false where nome = 'Almoxarifado' $$,
+select is((select descricao from public.local where nome = 'T-Laboratório 1'), 'Bloco C', 'RF-04: edição gravada');
+select lives_ok($$ update public.local set ativo = false where nome = 'T-Almoxarifado' $$,
   'RF-04: admin desativa local sem itens');
 select lives_ok($$ update public.tipo_item set ativo = false where nome = 'Kit didático' $$,
   'RF-03: admin desativa tipo sem itens');
-select is((select count(*)::int from public.local where nome = 'Almoxarifado'), 1,
+select is((select count(*)::int from public.local where nome = 'T-Almoxarifado'), 1,
   'CA-10: admin continua vendo local desativado');
 
 -- CA-06 / RN-01: solicitante ativo só lê, e só o que está ativo -----------------
@@ -68,15 +68,15 @@ select pg_temp.como('00000000-0000-0000-0201-0000000000b1');
 select ok((select count(*) from public.tipo_item where nome = 'Ferramenta') = 1, 'RN-01: solicitante ativo lê tipos');
 select is_empty($$ select 1 from public.tipo_item where nome = 'Kit didático' $$,
   'CA-10: tipo desativado invisível para solicitante');
-select is_empty($$ select 1 from public.local where nome = 'Almoxarifado' $$,
+select is_empty($$ select 1 from public.local where nome = 'T-Almoxarifado' $$,
   'CA-10: local desativado invisível para solicitante');
 select throws_ok($$ insert into public.tipo_item (nome, consumivel) values ('Pirata', true) $$,
   '42501', null, 'CA-06: solicitante não cria tipo');
 select throws_ok($$ insert into public.local (nome) values ('Pirata') $$,
   '42501', null, 'CA-06: solicitante não cria local');
-update public.local set nome = 'Hackeado' where nome = 'Laboratório 1';
+update public.local set nome = 'Hackeado' where nome = 'T-Laboratório 1';
 update public.tipo_item set consumivel = true where nome = 'Ferramenta';
-delete from public.local where nome = 'Laboratório 1';
+delete from public.local where nome = 'T-Laboratório 1';
 
 -- Pendente e inativo não leem nada ---------------------------------------------
 select pg_temp.como('00000000-0000-0000-0201-0000000000c1');
@@ -97,7 +97,7 @@ select throws_ok($$ select 1 from public.local $$, '42501', null, 'anon não lê
 
 -- Nada mudou pelas tentativas negadas -------------------------------------------
 reset role;
-select is((select count(*)::int from public.local where nome = 'Laboratório 1'), 1,
+select is((select count(*)::int from public.local where nome = 'T-Laboratório 1'), 1,
   'CA-06: update/delete do solicitante não afetaram o local');
 select is((select consumivel from public.tipo_item where nome = 'Ferramenta'), false,
   'CA-06: update do solicitante não afetou o tipo');

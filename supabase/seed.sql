@@ -38,3 +38,33 @@ insert into public.profiles (id, nome, email, matricula, perfil, status)
 select u.id, u.nome, u.email, u.matricula, u.perfil, u.status
 from usuarios u
 join novas_identidades i on i.user_id = u.id;
+
+-- spec-002 T-13: locais e itens de exemplo (os tipos Insumo, Ferramenta e Máquina
+-- vêm da migration). Cobre: insumo com estoque mínimo (um no limite, spec-007/CA-09),
+-- ferramenta com várias unidades, máquinas com patrimônio, inoperante e desativado.
+insert into public.local (id, nome, descricao) values
+  ('00000000-0000-4000-8000-0000000000f1', 'Almoxarifado', 'Bloco A, térreo'),
+  ('00000000-0000-4000-8000-0000000000f2', 'Laboratório de Ciências', 'Bloco B, sala 12'),
+  ('00000000-0000-4000-8000-0000000000f3', 'Sala de Artes', null);
+
+with t as (select id, nome::text as nome from public.tipo_item)
+insert into public.item (id, nome, tipo_id, local_id, quantidade_total, estado, numero_patrimonio, descricao, estoque_minimo)
+values
+  ('00000000-0000-4000-8000-0000000000e1', 'Papel A4 (resma)', (select id from t where nome = 'Insumo'),
+   '00000000-0000-4000-8000-0000000000f1', 40, 'novo', null, 'Resma com 500 folhas', 10),
+  ('00000000-0000-4000-8000-0000000000e2', 'Cola branca 1 kg', (select id from t where nome = 'Insumo'),
+   '00000000-0000-4000-8000-0000000000f3', 5, 'novo', null, null, 5),
+  ('00000000-0000-4000-8000-0000000000e3', 'Chave de fenda Phillips', (select id from t where nome = 'Ferramenta'),
+   '00000000-0000-4000-8000-0000000000f1', 10, 'bom', null, null, null),
+  ('00000000-0000-4000-8000-0000000000e4', 'Alicate universal', (select id from t where nome = 'Ferramenta'),
+   '00000000-0000-4000-8000-0000000000f1', 6, 'regular', null, null, null),
+  ('00000000-0000-4000-8000-0000000000e5', 'Furadeira de impacto', (select id from t where nome = 'Máquina'),
+   '00000000-0000-4000-8000-0000000000f1', 1, 'bom', 'PAT-0001', '220 V', null),
+  ('00000000-0000-4000-8000-0000000000e6', 'Microscópio óptico', (select id from t where nome = 'Máquina'),
+   '00000000-0000-4000-8000-0000000000f2', 1, 'regular', 'PAT-0002', null, null),
+  ('00000000-0000-4000-8000-0000000000e7', 'Termômetro de mercúrio', (select id from t where nome = 'Ferramenta'),
+   '00000000-0000-4000-8000-0000000000f2', 3, 'ruim', null, 'Substituído por digitais', null);
+
+-- CA-05: inoperante continua no catálogo; CA-10: desativado some para o professor
+update public.item set operante = false where id = '00000000-0000-4000-8000-0000000000e6';
+update public.item set ativo = false where id = '00000000-0000-4000-8000-0000000000e7';
