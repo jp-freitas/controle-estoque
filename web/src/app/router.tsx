@@ -10,6 +10,8 @@ import {
   RequerAtivo,
   RequerSessao,
 } from '@/features/auth'
+import { CatalogoPage } from '@/features/catalogo'
+import { ItensPage, LocaisPage, TiposPage } from '@/features/itens-admin'
 import { ConvitesPage, MeuPerfilPage, UsuariosPage } from '@/features/usuarios'
 import { RootLayout } from './RootLayout'
 
@@ -31,12 +33,15 @@ export const rotas: RouteObject[] = [
           {
             element: <RequerAtivo />,
             children: [
-              { index: true, element: <p>Em construção.</p> },
+              { index: true, element: <CatalogoPage /> },
               { path: 'meu-perfil', element: <MeuPerfilPage /> },
               {
                 path: 'admin',
                 element: <RequerAdmin />,
                 children: [
+                  { path: 'itens', element: <ItensPage /> },
+                  { path: 'tipos', element: <TiposPage /> },
+                  { path: 'locais', element: <LocaisPage /> },
                   { path: 'usuarios', element: <UsuariosPage /> },
                   { path: 'convites', element: <ConvitesPage /> },
                 ],

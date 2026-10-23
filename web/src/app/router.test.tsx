@@ -3,8 +3,15 @@ import { screen } from '@testing-library/react'
 import { perfilFalso, renderizarRotas, sessaoFalsa } from '@/features/auth/testing'
 import { rotas } from './router'
 
-// As telas de admin buscam dados; aqui só importa a guarda.
+import * as catalogoApi from '@/features/catalogo/api/catalogoApi'
+
+// As telas buscam dados; aqui só importa a guarda.
 vi.mock('@/features/usuarios/api/usuariosApi')
+vi.mock('@/features/catalogo/api/catalogoApi')
+vi.mock('@/features/itens-admin/api/itensAdminApi')
+beforeEach(() => vi.mocked(catalogoApi.listarCatalogo).mockResolvedValue([]))
+
+const inicio = () => screen.findByRole('heading', { name: 'Catálogo' })
 
 const sessao = sessaoFalsa()
 
@@ -49,15 +56,15 @@ describe('T-23: guardas de rota', () => {
     expect(router.state.location.pathname).toBe('/desativado')
   })
 
-  test('ativo acessa o início, com o menu', async () => {
+  test('spec-002/RF-10: ativo acessa o catálogo como início, com o menu', async () => {
     renderizarRotas(rotas, '/', { sessao, perfil: perfilFalso() })
-    expect(await screen.findByText('Em construção.')).toBeInTheDocument()
+    expect(await inicio()).toBeInTheDocument()
     expect(screen.getByRole('navigation', { name: 'Principal' })).toBeInTheDocument()
   })
 
   test('ativo não fica preso na tela de pendente', async () => {
     const { router } = renderizarRotas(rotas, '/aguardando', { sessao, perfil: perfilFalso() })
-    expect(await screen.findByText('Em construção.')).toBeInTheDocument()
+    expect(await inicio()).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/')
   })
 
@@ -66,7 +73,7 @@ describe('T-23: guardas de rota', () => {
       sessao,
       perfil: perfilFalso(),
     })
-    expect(await screen.findByText('Em construção.')).toBeInTheDocument()
+    expect(await inicio()).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/')
     expect(screen.queryByRole('link', { name: 'Usuários' })).not.toBeInTheDocument()
   })
@@ -85,11 +92,20 @@ describe('T-23: guardas de rota', () => {
     renderizarRotas(rotas, '/', { sessao, perfil: perfilFalso({ perfil: 'admin' }) })
     expect(await screen.findByRole('link', { name: 'Usuários' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Convites' })).toBeInTheDocument()
+    for (const nome of ['Itens', 'Tipos', 'Locais'])
+      expect(screen.getByRole('link', { name: nome })).toBeInTheDocument()
+  })
+
+  test('spec-002/RN-01: solicitante não vê nem entra no cadastro de itens', async () => {
+    const { router } = renderizarRotas(rotas, '/admin/itens', { sessao, perfil: perfilFalso() })
+    expect(await inicio()).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/')
+    expect(screen.queryByRole('link', { name: 'Itens' })).not.toBeInTheDocument()
   })
 
   test('logado não vê a tela de login', async () => {
     const { router } = renderizarRotas(rotas, '/entrar', { sessao, perfil: perfilFalso() })
-    expect(await screen.findByText('Em construção.')).toBeInTheDocument()
+    expect(await inicio()).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/')
   })
 })
