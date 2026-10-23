@@ -24,6 +24,18 @@ describe('erroRpc', () => {
     expect(erroRpc({ code: '23503', message: 'fk' }).mensagem).toMatch(/Possui histórico/)
   })
 
+  test('spec-002/CA-02: 23505 vira mensagem pela constraint', () => {
+    const duplicado = (constraint: string) =>
+      erroRpc({
+        code: '23505',
+        message: `duplicate key value violates unique constraint "${constraint}"`,
+      }).mensagem
+    expect(duplicado('item_numero_patrimonio_key')).toBe('Número de patrimônio já cadastrado.')
+    expect(duplicado('local_nome_key')).toBe('Já existe um local com este nome.')
+    expect(duplicado('tipo_item_nome_key')).toBe('Já existe um tipo com este nome.')
+    expect(duplicado('outra_key')).toBe('Já existe um registro com esses dados.')
+  })
+
   test('42501: sem permissão', () => {
     expect(erroRpc({ code: '42501', message: 'permission denied' }).mensagem).toBe(
       'Você não tem permissão para esta operação.',
