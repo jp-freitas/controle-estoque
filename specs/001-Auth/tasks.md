@@ -50,11 +50,11 @@ O plano depende de dois comportamentos do Supabase Auth que precisam ser confirm
   - **RF-07** com concorrência: dois admins se rebaixando ao mesmo tempo não zeram os admins ativos — teste na suíte de concorrência (T-06a), não em pgTAP.
   - caminhos negados: solicitante, pendente e inativo chamando cada RPC.
 - [x] **T-10** 🗄️ RPCs `alterar_status_usuario(id, status)` e `alterar_perfil_usuario(id, perfil)`: admin ativo, nunca a si mesmo em perfil/status (RF-06), trava de último admin com `FOR UPDATE` (RF-07, P-04, P-08).
-- [ ] **T-11** 🧪 pgTAP `001_editar_perfil.test.sql`:
+- [x] **T-11** 🧪 pgTAP `001_editar_perfil.test.sql`:
   - **CA-16**: usuário ativo edita o próprio `nome`/`matricula`; não há via para mudar `email`/`perfil`/`status`;
   - **CA-17**: matrícula duplicada → "Matrícula já cadastrada";
   - RF-16: admin edita nome/matrícula de outro; solicitante não edita outro.
-- [ ] **T-12** 🗄️ RPCs `atualizar_meu_perfil(nome, matricula)` e `atualizar_usuario(id, nome, matricula)` (trim, vazio → `null`).
+- [x] **T-12** 🗄️ RPCs `atualizar_meu_perfil(nome, matricula)` e `atualizar_usuario(id, nome, matricula)` (trim, vazio → `null`).
 
 ## Fase 3 — Convite (RF-03, RF-10 a RF-14, RN-03 a RN-05)
 
@@ -66,6 +66,7 @@ O plano depende de dois comportamentos do Supabase Auth que precisam ser confirm
   - RN-03: `Prof@Escola.br` e `prof@escola.br` são o mesmo e-mail;
   - concorrência: dois admins convidando o mesmo e-mail ao mesmo tempo → só um convite — teste na suíte de concorrência (T-06a).
 - [ ] **T-14** 🗄️ Migration `001_convite`: tabela `convite`, view/função de situação derivada, RLS (só `select` para admin ativo), RPCs `convidar_usuario` e `cancelar_convite` com `pg_advisory_xact_lock`.
+  - RN-05: estender `aplicar_edicao_perfil` (T-12) para recusar matrícula de convite em aberto, com o mesmo lock por matrícula; senão um usuário pode tomar a matrícula de um convidado e o aceite dele falharia (achado na T-12). Teste em T-13 (CA-17).
 - [ ] **T-15** 🧪 pgTAP `001_aceitar_convite.test.sql`:
   - **CA-09**: aceite válido cria `profiles` `pendente` com e-mail, nome e perfil do convite; convite vira `aceito`;
   - **CA-10**: convite com mais de 7 dias → "Convite expirado";
