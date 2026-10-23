@@ -39,12 +39,15 @@ Regras:
 | Ambiente | Situação | Front | Banco |
 |---|---|---|---|
 | local | **em uso** | `npm run dev` | `supabase start` (Docker) |
-| staging | a criar quando houver algo para mostrar online | deploy de preview da Vercel (um por PR) | projeto Supabase **staging** |
+| staging (homologação) | **em uso** | projeto Vercel `controle-estoque`: previews (um por PR) e, provisoriamente, o deploy da `main` (`https://controle-estoque.vercel.app`) | Supabase `controle-estoque-stagging` (ref `nfuagnapfergfheeohbh`) |
 | produção | **planejado — ainda não existe** | Vercel, só a partir da `main` | projeto Supabase **produção** |
 
-Hoje só existe o ambiente **local**. Não crie projetos remotos (Supabase/Vercel) nem configure staging/produção sem pedido explícito do usuário.
+Hoje existem **local** e **staging**. Não crie projetos remotos (Supabase/Vercel) nem configure produção sem pedido explícito do usuário.
 
-- As variáveis `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` na Vercel são configuradas **por ambiente**: *Preview* → staging, *Production* → produção. Preview nunca aponta para produção (I-03).
+- **Provisório, até existir produção:** as variáveis *Production* da Vercel também apontam para o staging, então o deploy da `main` é a URL fixa da homologação. Quando a produção for criada, troque essas variáveis (e o `site_url` em `[remotes.staging.auth]`).
+- **Configuração do Auth do staging é código:** bloco `[remotes.staging]` em `supabase/config.toml` (herda hook e templates; sobrescreve URLs e regras de e-mail). Aplicar com `supabase config diff` → `supabase config push`, sempre com confirmação explícita.
+
+- As variáveis `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` na Vercel são configuradas **por ambiente**: *Preview* → staging, *Production* → produção (hoje, provisoriamente, staging). Preview nunca aponta para produção (I-03).
 - Tudo que começa com `VITE_` vai para o bundle público: só a chave anon/publishable. Nunca a `service_role` (I-04).
 - O Supabase Auth de cada projeto precisa das Redirect URLs do domínio correspondente (recuperação de senha, spec-001/RF-01). Ver `specs/001-Auth/plan.md`.
 - Deploy de produção automático ou manual (constituição OPEN-01): **adiado** até existir produção. Não trate como decisão a tomar agora.
@@ -176,6 +179,8 @@ supabase gen types typescript --local > web/src/types/database.ts
 # Banco remoto (sempre com confirmação explícita)
 supabase link --project-ref <ref>   # staging ou produção
 supabase db push                    # aplica migrations pendentes no projeto linkado
+supabase config diff                # compara config.toml ([remotes.<ambiente>]) com o projeto linkado
+supabase config push                # aplica a config do Auth (pede confirmação por recurso)
 
 # Vercel
 vercel                              # deploy de preview (ou /vercel:deploy)

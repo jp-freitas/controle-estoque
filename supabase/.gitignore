@@ -6,3 +6,6 @@
 .env.keys
 .env.local
 .env.*.local
+
+# Segredos do config.toml (env(...)), ex.: SMTP do staging. Nunca commitar.
+.env

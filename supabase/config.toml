@@ -428,3 +428,45 @@ enabled = true
 # formatted with uppercase keywords, indent 2, max width 180, trailing commas,
 # and column/key alignment. Set to "null" to emit raw, unformatted SQL.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":180,\"commaStyle\":\"trailing\"}"
+
+# Staging (homologação): projeto Supabase "controle-estoque-stagging".
+# Herda tudo acima (hook before_user_created, templates em pt-BR, regras de senha/OTP);
+# aqui só o que muda. Aplicar com `supabase config diff` e `supabase config push`
+# (sempre com confirmação explícita). Ver specs/001-Auth/plan.md.
+[remotes.staging]
+project_id = "nfuagnapfergfheeohbh"
+
+[remotes.staging.auth]
+# Provisório: o deploy da main (Production na Vercel) aponta para o staging até existir produção.
+site_url = "https://controle-estoque.vercel.app"
+additional_redirect_urls = [
+  "https://controle-estoque.vercel.app/**",
+  "https://controle-estoque-tecjps-projects.vercel.app/**",
+  "https://controle-estoque-*-tecjps-projects.vercel.app/**",
+  "http://localhost:5173/**",
+]
+
+[remotes.staging.auth.email]
+# Remoto mais próximo da produção: confirmação de e-mail ligada e intervalo padrão entre envios.
+enable_confirmations = true
+max_frequency = "1m0s"
+
+# SMTP próprio (Gmail com senha de app): no plano gratuito, templates personalizados
+# só funcionam com SMTP próprio. Valores vêm de variáveis de ambiente (shell ou
+# supabase/.env, ignorado pelo Git); nunca escreva a senha aqui.
+[remotes.staging.auth.email.smtp]
+enabled = true
+host = "smtp.gmail.com"
+port = 587
+user = "env(STAGING_SMTP_USER)"
+pass = "env(STAGING_SMTP_PASS)"
+admin_email = "env(STAGING_SMTP_USER)"
+sender_name = "Controle de Inventário"
+
+# Mantém os valores do plano do projeto remoto (o local usa os padrões do CLI).
+[remotes.staging.db.pooler]
+default_pool_size = 15
+max_client_conn = 200
+
+[remotes.staging.storage.vector]
+enabled = false

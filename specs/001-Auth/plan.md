@@ -9,11 +9,12 @@ A recuperação de senha por e-mail envia um link que volta para o front. Cada p
 | Projeto Supabase | Site URL | Additional Redirect URLs |
 |---|---|---|
 | local (`supabase/config.toml`) | `http://127.0.0.1:5173` | `http://localhost:5173/**`, `http://127.0.0.1:5173/**` |
-| staging (a criar) | domínio de preview da Vercel | `https://<projeto>-*-<time>.vercel.app/**` |
+| staging (`nfuagnapfergfheeohbh`) | `https://controle-estoque.vercel.app` (deploy da `main`, provisório) | esse domínio, `https://controle-estoque-tecjps-projects.vercel.app/**`, `https://controle-estoque-*-tecjps-projects.vercel.app/**` (previews), `http://localhost:5173/**` |
 | produção (planejado) | domínio de produção | — |
 
 - No front, o `redirectTo` de `resetPasswordForEmail` usa `window.location.origin`, para funcionar em qualquer ambiente sem variável extra.
-- Configurado em **Authentication → URL Configuration** de cada projeto remoto (configuração de projeto, não schema; não há migration).
+- Remoto: declarado em `[remotes.<ambiente>.auth]` no `config.toml` e aplicado com `supabase config push` (configuração de projeto, não schema; não há migration). O hook e os templates vêm da configuração base.
+- Primeiro admin do staging (RN-01): criar o usuário em **Authentication → Users → Add user** (com senha, *auto confirm*) **antes** de ligar o hook, ou desligá-lo temporariamente; depois `insert into public.profiles (id, nome, email, perfil, status) select id, '<nome>', email, 'admin', 'ativo' from auth.users where email = '<email>';` no SQL Editor.
 - O link do convite (RF-11) também volta para essas URLs. Os destinos têm caminho (`/primeiro-acesso`, `/redefinir-senha`), por isso as URLs adicionais usam `/**`: sem isso o Auth descarta o destino e manda para a raiz do `site_url`.
 
 ## Convite (RF-03, RF-10 a RF-14)
@@ -76,7 +77,7 @@ Confirmado localmente; o fluxo acima se mantém, com estes ajustes:
 ### E-mail
 
 - Local: os e-mails caem no Mailpit (http://127.0.0.1:54324).
-- Remoto (staging/produção): o SMTP padrão do Supabase tem limite de poucos e-mails por hora; configurar SMTP próprio antes de usar com a escola.
+- Remoto (staging/produção): o SMTP padrão do Supabase tem limite de poucos e-mails por hora, só entrega para membros da organização e, no plano gratuito, **não aceita templates personalizados** (`400 Email template modification is not available for free tier projects using the default email provider`). Por isso o staging usa SMTP próprio (Gmail com senha de app) em `[remotes.staging.auth.email.smtp]`, com usuário e senha em `supabase/.env` (ignorado pelo Git) via `env(...)`. Produção: rever o provedor (domínio próprio).
 - O link do e-mail expira em `otp_expiry` (1 h no `config.toml`); se vencer dentro dos 7 dias do convite, o admin reenvia.
 - **Recuperação de senha em pt-BR (tarefa T-18b):** o template *recovery* (RF-01) também é em inglês por padrão; mesmo tratamento do convite, em `supabase/templates/recuperacao.html`.
 - **Template em pt-BR (achado do T-01, tarefa T-18a):** o convite usa o template *magic link* do Auth, que por padrão é em inglês. Local: `[auth.email.template.magic_link]` no `config.toml` apontando para `supabase/templates/convite.html`; remoto: mesmo conteúdo no painel de cada projeto. Como o *magic link* também é o e-mail de qualquer login por OTP, e o sistema só usa OTP para convite, o texto pode falar diretamente do convite.
