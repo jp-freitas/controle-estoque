@@ -11,13 +11,15 @@ Legenda: 🧪 teste primeiro · 🗄️ banco · 🖥️ front · 🔍 validaç�
 
 O plano depende de dois comportamentos do Supabase Auth que precisam ser confirmados localmente antes de escrever o resto.
 
-- [ ] **T-01** 🔍 Spike (descartável, fora de `migrations/`): habilitar `[auth.hook.before_user_created]` no `config.toml` apontando para uma função que rejeita tudo, e confirmar:
+- [x] **T-01** 🔍 Spike (descartável, fora de `migrations/`): habilitar `[auth.hook.before_user_created]` no `config.toml` apontando para uma função que rejeita tudo, e confirmar:
   - `signUp` e `signInWithOtp({ shouldCreateUser: true })` são bloqueados com erro legível pelo front;
   - em que momento `signInWithOtp` cria a linha em `auth.users` (no envio ou no clique do link);
   - o e-mail chega no Mailpit e o link redireciona para `emailRedirectTo`;
   - `signInWithOtp` chamado pelo admin logado **não** altera a sessão dele.
   
   Se algo divergir do `plan.md`, **parar e atualizar o plano** antes da Fase 1.
+
+  ✅ Concluído em 2026-10-23: os quatro pontos confirmados; ajustes registrados em `plan.md` → "Achados do spike T-01" (hook `SECURITY DEFINER` que nunca lança erro; "já tem conta" checado em `profiles`; manter fluxo `implicit`; tratar `429` no reenvio; template de e-mail em pt-BR pendente).
 
 ## Fase 1 — Base: perfis, auditoria e primeiro admin (RF-02, RF-06, RN-01, RN-02)
 
@@ -74,6 +76,7 @@ O plano depende de dois comportamentos do Supabase Auth que precisam ser confirm
 - [ ] **T-16** 🗄️ RPC `aceitar_convite()`.
 - [ ] **T-17** 🧪 pgTAP `001_hook_cadastro.test.sql` — **CA-01**: hook `before_user_created` rejeita e-mail sem convite em aberto (inclui expirado e cancelado) e aceita e-mail com convite válido.
 - [ ] **T-18** 🗄️ Função do hook + `[auth.hook.before_user_created]` no `config.toml`.
+- [ ] **T-18a** 🗄️ **RF-11**: template do e-mail de convite em pt-BR (achado do T-01). O convite usa o template *magic link* do Auth, que é em inglês por padrão. Criar `supabase/templates/convite.html` (assunto e corpo em pt-BR, link `{{ .ConfirmationURL }}`, aviso de que o convite vale 7 dias e o link 1 h) e apontar `[auth.email.template.magic_link]` no `config.toml` (`subject` + `content_path`). Verificar no Mailpit. Nos projetos remotos, o mesmo template é configurado no painel quando staging/produção forem criados.
 - [ ] **T-19** 🔍 Rodar `supabase db reset` + `supabase test db` completos; `get_advisors` não se aplica (só local) — revisar manualmente: RLS em todas as tabelas novas, `search_path` fixo em toda `SECURITY DEFINER`, `grant execute` só para `authenticated`.
 - [ ] **T-20** 🗄️ `npm run db:types` e commit de `web/src/types/database.ts`.
 

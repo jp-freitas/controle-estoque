@@ -55,11 +55,29 @@ Tabela `convite` (RLS habilitado):
 
 Sem `profiles`, o usuário autenticado não vê nada (RLS), então um usuário criado no passo 2 mas que nunca aceitou o convite não tem acesso.
 
+### Achados do spike T-01 (2026-10-23, Supabase CLI 2.121, supabase-js 2.117)
+
+Confirmado localmente; o fluxo acima se mantém, com estes ajustes:
+
+- **Hook bloqueia `signUp` e `signInWithOtp`:** o front recebe `AuthApiError` com `status 403` e `message` igual à mensagem devolvida pelo hook; nenhuma linha em `auth.users`. O front exibe `error.message`.
+- **Hook roda como `supabase_auth_admin`, sujeito a RLS.** A função do hook deve ser `SECURITY DEFINER` com `search_path` fixo (lê `convite`, que tem RLS) e **nunca lançar exceção**: qualquer erro interno vira `500 AuthRetryableFetchError` genérico ("Error running hook URI") no front. Grants: `execute` só para `supabase_auth_admin`, revogado de `anon`/`authenticated`/`public`.
+- **`signInWithOtp` cria a linha em `auth.users` no envio**, não no clique, já com `email_confirmed_at` preenchido (local com `enable_confirmations = false`). Consequências:
+  - "já tem conta" (RF-14, em `convidar_usuario`) é checado em **`profiles`**, não em `auth.users` — um convidado que recebeu o e-mail mas não aceitou já está em `auth.users`;
+  - o hook só roda na **primeira** criação: reenvio, novo convite após expiração e OTP depois de cancelar não passam pelo hook. A barreira de cancelado/expirado é `aceitar_convite()` + RLS, como já previsto.
+- **Link do e-mail:** `GET /auth/v1/verify` → `303` para `emailRedirectTo` (`/primeiro-acesso`) com `access_token`/`refresh_token` no fragmento (fluxo `implicit`, padrão do supabase-js). **Não usar `flowType: 'pkce'`**: o `code_verifier` ficaria no navegador do admin e o convidado não conseguiria trocar o código. `/primeiro-acesso` é aceito pela allow-list por estar sob o `site_url`.
+- **Sessão do admin não muda** ao chamar `signInWithOtp` para outro e-mail (mesmo `access_token` antes e depois).
+- Com a sessão do link, o convidado define a senha com `auth.updateUser({ password })` sem reautenticar (`secure_password_change = false`).
+- O Auth grava o e-mail em minúsculas antes de chamar o hook; ainda assim, comparar via `citext` (RN-03).
+- Reenvio em sequência rápida para o mesmo e-mail → `429 over_email_send_rate_limit` (`max_frequency`); a tela de convites deve tratar com mensagem amigável.
+- O e-mail sai com o template padrão em inglês ("Your sign-in link"). Ver pendência em **E-mail**.
+- Payload do hook: `event->'user'->>'email'` (também `id`, `app_metadata.provider`, `metadata.name = 'before-user-created'`).
+
 ### E-mail
 
 - Local: os e-mails caem no Mailpit (http://127.0.0.1:54324).
 - Remoto (staging/produção): o SMTP padrão do Supabase tem limite de poucos e-mails por hora; configurar SMTP próprio antes de usar com a escola.
 - O link do e-mail expira em `otp_expiry` (1 h no `config.toml`); se vencer dentro dos 7 dias do convite, o admin reenvia.
+- **Template em pt-BR (achado do T-01, tarefa T-18a):** o convite usa o template *magic link* do Auth, que por padrão é em inglês. Local: `[auth.email.template.magic_link]` no `config.toml` apontando para `supabase/templates/convite.html`; remoto: mesmo conteúdo no painel de cada projeto. Como o *magic link* também é o e-mail de qualquer login por OTP, e o sistema só usa OTP para convite, o texto pode falar diretamente do convite.
 
 ### Primeiro admin (RN-01)
 
