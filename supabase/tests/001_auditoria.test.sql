@@ -6,9 +6,9 @@ select plan(27);
 
 -- Fixtures ------------------------------------------------------------------
 insert into auth.users (id, email) values
-  ('00000000-0000-0000-0000-0000000000a1', 'admin@escola.test'),
-  ('00000000-0000-0000-0000-0000000000b1', 'prof@escola.test'),
-  ('00000000-0000-0000-0000-0000000000c1', 'outro@escola.test');
+  ('00000000-0000-0000-0000-0000000000a1', 't-admin@teste.test'),
+  ('00000000-0000-0000-0000-0000000000b1', 't-prof@teste.test'),
+  ('00000000-0000-0000-0000-0000000000c1', 't-outro@teste.test');
 
 -- Simula o JWT de um usuário (auth.uid()) sem trocar de role
 create function pg_temp.como(uid uuid) returns void language sql as $$
@@ -27,19 +27,19 @@ $$;
 -- INSERT (spec-006/RF-06, RF-03, CA-09) -------------------------------------
 select pg_temp.sem_usuario();
 insert into public.profiles (id, nome, email, perfil, status) values
-  ('00000000-0000-0000-0000-0000000000a1', 'Admin', 'admin@escola.test', 'admin', 'ativo');
+  ('00000000-0000-0000-0000-0000000000a1', 'Admin', 't-admin@teste.test', 'admin', 'ativo');
 
 select is((pg_temp.ultima('00000000-0000-0000-0000-0000000000a1')).acao, 'INSERT',
   'spec-006/RF-06: INSERT em profiles é auditado');
 select ok((pg_temp.ultima('00000000-0000-0000-0000-0000000000a1')).dados_antes is null
-  and (pg_temp.ultima('00000000-0000-0000-0000-0000000000a1')).dados_depois->>'email' = 'admin@escola.test',
+  and (pg_temp.ultima('00000000-0000-0000-0000-0000000000a1')).dados_depois->>'email' = 't-admin@teste.test',
   'spec-006/RF-03: INSERT grava dados_antes nulo e dados_depois completo');
 select is((pg_temp.ultima('00000000-0000-0000-0000-0000000000a1')).usuario_id, null,
   'spec-006/CA-09: sem usuário autenticado, usuario_id fica nulo ("Sistema")');
 select is((pg_temp.ultima('00000000-0000-0000-0000-0000000000a1')).tabela, 'profiles', 'tabela = profiles');
 
 insert into public.profiles (id, nome, email) values
-  ('00000000-0000-0000-0000-0000000000b1', 'Prof', 'prof@escola.test');
+  ('00000000-0000-0000-0000-0000000000b1', 'Prof', 't-prof@teste.test');
 
 -- CA-03: admin aprova pendente → ativo, com motivo ---------------------------
 select pg_temp.como('00000000-0000-0000-0000-0000000000a1');
@@ -94,7 +94,7 @@ select is(
 
 -- DELETE (spec-006/RF-03) ---------------------------------------------------
 insert into public.profiles (id, nome, email) values
-  ('00000000-0000-0000-0000-0000000000c1', 'Outro', 'outro@escola.test');
+  ('00000000-0000-0000-0000-0000000000c1', 'Outro', 't-outro@teste.test');
 delete from public.profiles where id = '00000000-0000-0000-0000-0000000000c1';
 select ok((pg_temp.ultima('00000000-0000-0000-0000-0000000000c1')).acao = 'DELETE'
   and (pg_temp.ultima('00000000-0000-0000-0000-0000000000c1')).dados_depois is null
@@ -114,9 +114,9 @@ select is((select status::text from public.profiles where id = '00000000-0000-00
 
 -- spec-006/CA-10: leitura só para admin ativo --------------------------------
 -- (o solicitante "outro" precisa existir e estar ativo)
-insert into auth.users (id, email) values ('00000000-0000-0000-0000-0000000000d1', 'sol@escola.test');
+insert into auth.users (id, email) values ('00000000-0000-0000-0000-0000000000d1', 't-sol@teste.test');
 insert into public.profiles (id, nome, email, status) values
-  ('00000000-0000-0000-0000-0000000000d1', 'Sol', 'sol@escola.test', 'ativo');
+  ('00000000-0000-0000-0000-0000000000d1', 'Sol', 't-sol@teste.test', 'ativo');
 
 set local role authenticated;
 select pg_temp.como('00000000-0000-0000-0000-0000000000d1');
