@@ -438,9 +438,9 @@ project_id = "nfuagnapfergfheeohbh"
 
 [remotes.staging.auth]
 # Provisório: o deploy da main (Production na Vercel) aponta para o staging até existir produção.
-site_url = "https://controle-estoque.vercel.app"
+site_url = "https://controle-estoque-seven-self.vercel.app"
 additional_redirect_urls = [
-  "https://controle-estoque.vercel.app/**",
+  "https://controle-estoque-seven-self.vercel.app/**",
   "https://controle-estoque-tecjps-projects.vercel.app/**",
   "https://controle-estoque-*-tecjps-projects.vercel.app/**",
   "http://localhost:5173/**",

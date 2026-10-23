@@ -9,7 +9,7 @@ A recuperação de senha por e-mail envia um link que volta para o front. Cada p
 | Projeto Supabase | Site URL | Additional Redirect URLs |
 |---|---|---|
 | local (`supabase/config.toml`) | `http://127.0.0.1:5173` | `http://localhost:5173/**`, `http://127.0.0.1:5173/**` |
-| staging (`nfuagnapfergfheeohbh`) | `https://controle-estoque.vercel.app` (deploy da `main`, provisório) | esse domínio, `https://controle-estoque-tecjps-projects.vercel.app/**`, `https://controle-estoque-*-tecjps-projects.vercel.app/**` (previews), `http://localhost:5173/**` |
+| staging (`nfuagnapfergfheeohbh`) | `https://controle-estoque-seven-self.vercel.app` (deploy da `main`, provisório) | esse domínio, `https://controle-estoque-tecjps-projects.vercel.app/**`, `https://controle-estoque-*-tecjps-projects.vercel.app/**` (previews), `http://localhost:5173/**` |
 | produção (planejado) | domínio de produção | — |
 
 - No front, o `redirectTo` de `resetPasswordForEmail` usa `window.location.origin`, para funcionar em qualquer ambiente sem variável extra.

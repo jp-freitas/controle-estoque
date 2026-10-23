@@ -39,12 +39,12 @@ Regras:
 | Ambiente | Situação | Front | Banco |
 |---|---|---|---|
 | local | **em uso** | `npm run dev` | `supabase start` (Docker) |
-| staging (homologação) | **em uso** | projeto Vercel `controle-estoque`: previews (um por PR) e, provisoriamente, o deploy da `main` (`https://controle-estoque.vercel.app`) | Supabase `controle-estoque-stagging` (ref `nfuagnapfergfheeohbh`) |
+| staging (homologação) | **em uso** | projeto Vercel `controle-estoque`: previews (um por PR) e, provisoriamente, o deploy da `main` (`https://controle-estoque-seven-self.vercel.app`) | Supabase `controle-estoque-stagging` (ref `nfuagnapfergfheeohbh`) |
 | produção | **planejado — ainda não existe** | Vercel, só a partir da `main` | projeto Supabase **produção** |
 
 Hoje existem **local** e **staging**. Não crie projetos remotos (Supabase/Vercel) nem configure produção sem pedido explícito do usuário.
 
-- **Provisório, até existir produção:** as variáveis *Production* da Vercel também apontam para o staging, então o deploy da `main` é a URL fixa da homologação. Quando a produção for criada, troque essas variáveis (e o `site_url` em `[remotes.staging.auth]`).
+- **Provisório, até existir produção:** as variáveis *Production* da Vercel também apontam para o staging, então o deploy da `main` é a URL fixa da homologação (`controle-estoque-seven-self.vercel.app`, **pública**: a proteção da Vercel cobre só os previews; o acesso depende do login/convite do app). Quando a produção for criada, troque essas variáveis (e o `site_url` em `[remotes.staging.auth]`).
 - **Configuração do Auth do staging é código:** bloco `[remotes.staging]` em `supabase/config.toml` (herda hook e templates; sobrescreve URLs e regras de e-mail). Aplicar com `supabase config diff` → `supabase config push`, sempre com confirmação explícita.
 
 - As variáveis `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` na Vercel são configuradas **por ambiente**: *Preview* → staging, *Production* → produção (hoje, provisoriamente, staging). Preview nunca aponta para produção (I-03).
