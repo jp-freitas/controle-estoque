@@ -42,14 +42,14 @@ O plano depende de dois comportamentos do Supabase Auth que precisam ser confirm
   - solicitante ativo lê só o próprio perfil; admin ativo lê todos (RF-09);
   - `update` direto em `profiles` é negado para todos (só por RPC).
 - [x] **T-08** 🗄️ Políticas RLS de `profiles` conforme T-07.
-- [ ] **T-09** 🧪 pgTAP `001_gestao_usuarios.test.sql`:
+- [x] **T-09** 🧪 pgTAP `001_gestao_usuarios.test.sql`:
   - **CA-03**: admin aprova `pendente → ativo`, com auditoria;
   - **CA-04**: solicitante tentando virar admin (RPC e `update` direto) → negado;
   - **CA-05**: único admin ativo não se rebaixa nem se inativa, com mensagem clara;
   - **CA-06**: com dois admins, um rebaixa o outro;
   - **RF-07** com concorrência: dois admins se rebaixando ao mesmo tempo não zeram os admins ativos — teste na suíte de concorrência (T-06a), não em pgTAP.
   - caminhos negados: solicitante, pendente e inativo chamando cada RPC.
-- [ ] **T-10** 🗄️ RPCs `alterar_status_usuario(id, status)` e `alterar_perfil_usuario(id, perfil)`: admin ativo, nunca a si mesmo em perfil/status (RF-06), trava de último admin com `FOR UPDATE` (RF-07, P-04, P-08).
+- [x] **T-10** 🗄️ RPCs `alterar_status_usuario(id, status)` e `alterar_perfil_usuario(id, perfil)`: admin ativo, nunca a si mesmo em perfil/status (RF-06), trava de último admin com `FOR UPDATE` (RF-07, P-04, P-08).
 - [ ] **T-11** 🧪 pgTAP `001_editar_perfil.test.sql`:
   - **CA-16**: usuário ativo edita o próprio `nome`/`matricula`; não há via para mudar `email`/`perfil`/`status`;
   - **CA-17**: matrícula duplicada → "Matrícula já cadastrada";
