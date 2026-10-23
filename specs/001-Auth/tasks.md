@@ -36,12 +36,12 @@ O plano depende de dois comportamentos do Supabase Auth que precisam ser confirm
 
 ## Fase 2 — RLS e gestão de usuários (RF-04 a RF-07, RF-09, RF-15, RF-16)
 
-- [ ] **T-07** 🧪 pgTAP `001_profiles_rls.test.sql`:
+- [x] **T-07** 🧪 pgTAP `001_profiles_rls.test.sql`:
   - **CA-02**: `pendente` não lê nada além do próprio `profiles`;
   - **CA-07**: `inativo` não escreve nada;
   - solicitante ativo lê só o próprio perfil; admin ativo lê todos (RF-09);
   - `update` direto em `profiles` é negado para todos (só por RPC).
-- [ ] **T-08** 🗄️ Políticas RLS de `profiles` conforme T-07.
+- [x] **T-08** 🗄️ Políticas RLS de `profiles` conforme T-07.
 - [ ] **T-09** 🧪 pgTAP `001_gestao_usuarios.test.sql`:
   - **CA-03**: admin aprova `pendente → ativo`, com auditoria;
   - **CA-04**: solicitante tentando virar admin (RPC e `update` direto) → negado;
