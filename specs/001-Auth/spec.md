@@ -83,8 +83,9 @@ CA-11  Dado um convite `cancelado`
        Então o aceite é rejeitado e nenhum `profiles` é criado.
 
 CA-12  Dado um usuário `solicitante`, `pendente` ou `inativo`
-       Quando tenta criar, listar, reenviar ou cancelar convites (inclusive via chamada direta à API)
+       Quando tenta criar, listar ou cancelar convites (inclusive via chamada direta à API), ou reenviar pela interface
        Então a operação é negada.
+       (Reenvio via API: ver OPEN-04 — o link só chega ao dono do e-mail e não dá acesso a quem chamou.)
 
 CA-13  Dado um e-mail que já tem conta ou já tem convite em aberto
        Quando um admin tenta convidá-lo
@@ -117,3 +118,4 @@ Login social, autenticação em dois fatores, múltiplas escolas, autocadastro, 
 - **OPEN-01 (resolvido em 2026-10-19):** Modelo de entrada de usuários → **convite pelo admin**, com o e-mail registrado no banco. Convidado entra como `pendente`; admin escolhe o perfil no convite (padrão `solicitante`); convite expira em 7 dias. Refletido em RF-03, RF-10 a RF-14, RN-03, RN-04 e CA-01, CA-08 a CA-14.
 - **OPEN-02 (resolvido por consequência de OPEN-01):** Confirmação de e-mail — o próprio link do convite comprova o e-mail; não há etapa extra.
 - **OPEN-03 (resolvido em 2026-10-19):** Campos extras → apenas **matrícula**, opcional, informada pelo admin no convite e editável depois pelo próprio usuário ativo ou por admin. Refletido em RF-02, RF-10, RF-11, RF-15, RF-16, RN-05 e CA-15 a CA-18.
+- **OPEN-04 (resolvido em 2026-10-23):** Reenvio de convite por não-admin via API. O reenvio é o `signInWithOtp`, endpoint público do Supabase Auth que o banco não barra (constituição I-01 impede envio server-side). Decisão: reenviar é negado **na interface**; via API, a garantia é que quem chama **não ganha acesso** — o link só vai para o e-mail convidado e cancelado/expirado continua barrado em `aceitar_convite()`. Refletido em CA-12.

@@ -1,5 +1,6 @@
 # CI do projeto (constituição Q-03).
-# Front: lint, Prettier, typecheck, Vitest e build. Banco: migrations + lint do schema + pgTAP.
+# Front: lint, Prettier, typecheck, Vitest e build. Banco: migrations + lint do schema + pgTAP
+# + suíte de concorrência (Vitest + pg, spec-001/T-06a).
 name: CI
 
 on:
@@ -36,7 +37,7 @@ jobs:
       - run: npm run build
 
   banco:
-    name: Banco (migrations, lint, pgTAP)
+    name: Banco (migrations, lint, pgTAP, concorrência)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -58,5 +59,9 @@ jobs:
       - name: Testes pgTAP
         if: hashFiles('supabase/tests/**/*.sql') != ''
         run: npx supabase test db --workdir ..
+      # Duas sessões simultâneas contra o Postgres do passo acima (porta 54322).
+      - name: Testes de concorrência
+        if: hashFiles('supabase/tests/concorrencia/**/*.test.ts') != ''
+        run: npm run test:db:concorrencia
       - if: always()
         run: npx supabase stop --workdir .. --no-backup

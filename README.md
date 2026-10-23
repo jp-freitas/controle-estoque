@@ -51,4 +51,6 @@ Verificações do front (dentro de `web/`): `npm run lint`, `npm run format:chec
 
 ## Status
 
-Em fase inicial: constituição e specs 001 a 007 com `spec.md`, `plan.md` e `tasks.md`; implementação começando pela spec 001.
+Constituição e specs 001 a 007 com `spec.md`, `plan.md` e `tasks.md`. **Spec 001 (autenticação, convites e perfis) implementada** — banco, front e E2E. Próximas: 002 em diante.
+
+Usuários do seed (só desenvolvimento local, senha `Senha!123`): `admin@escola.test` (admin ativo), `ativo@escola.test`, `pendente@escola.test`, `inativo@escola.test`.

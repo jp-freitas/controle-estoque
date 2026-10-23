@@ -8,13 +8,13 @@ A recuperação de senha por e-mail envia um link que volta para o front. Cada p
 
 | Projeto Supabase | Site URL | Additional Redirect URLs |
 |---|---|---|
-| local (`supabase/config.toml`) | `http://127.0.0.1:5173` | `http://localhost:5173` |
+| local (`supabase/config.toml`) | `http://127.0.0.1:5173` | `http://localhost:5173/**`, `http://127.0.0.1:5173/**` |
 | staging (a criar) | domínio de preview da Vercel | `https://<projeto>-*-<time>.vercel.app/**` |
 | produção (planejado) | domínio de produção | — |
 
 - No front, o `redirectTo` de `resetPasswordForEmail` usa `window.location.origin`, para funcionar em qualquer ambiente sem variável extra.
 - Configurado em **Authentication → URL Configuration** de cada projeto remoto (configuração de projeto, não schema; não há migration).
-- O link do convite (RF-11) também volta para essas URLs.
+- O link do convite (RF-11) também volta para essas URLs. Os destinos têm caminho (`/primeiro-acesso`, `/redefinir-senha`), por isso as URLs adicionais usam `/**`: sem isso o Auth descarta o destino e manda para a raiz do `site_url`.
 
 ## Convite (RF-03, RF-10 a RF-14)
 
@@ -55,11 +55,31 @@ Tabela `convite` (RLS habilitado):
 
 Sem `profiles`, o usuário autenticado não vê nada (RLS), então um usuário criado no passo 2 mas que nunca aceitou o convite não tem acesso.
 
+### Achados do spike T-01 (2026-10-23, Supabase CLI 2.121, supabase-js 2.117)
+
+Confirmado localmente; o fluxo acima se mantém, com estes ajustes:
+
+- **Hook bloqueia `signUp` e `signInWithOtp`:** o front recebe `AuthApiError` com `status 403` e `message` igual à mensagem devolvida pelo hook; nenhuma linha em `auth.users`. O front exibe `error.message`.
+- **Hook roda como `supabase_auth_admin`, sujeito a RLS.** A função do hook deve ser `SECURITY DEFINER` com `search_path` fixo (lê `convite`, que tem RLS) e **nunca lançar exceção**: qualquer erro interno vira `500 AuthRetryableFetchError` genérico ("Error running hook URI") no front. Grants: `execute` só para `supabase_auth_admin`, revogado de `anon`/`authenticated`/`public`.
+- **`signInWithOtp` cria a linha em `auth.users` no envio**, não no clique, já com `email_confirmed_at` preenchido (local com `enable_confirmations = false`). Consequências:
+  - "já tem conta" (RF-14, em `convidar_usuario`) é checado em **`profiles`**, não em `auth.users` — um convidado que recebeu o e-mail mas não aceitou já está em `auth.users`;
+  - o hook só roda na **primeira** criação: reenvio, novo convite após expiração e OTP depois de cancelar não passam pelo hook. A barreira de cancelado/expirado é `aceitar_convite()` + RLS, como já previsto.
+- **Link do e-mail:** `GET /auth/v1/verify` → `303` para `emailRedirectTo` (`/primeiro-acesso`) com `access_token`/`refresh_token` no fragmento (fluxo `implicit`, padrão do supabase-js). **Não usar `flowType: 'pkce'`**: o `code_verifier` ficaria no navegador do admin e o convidado não conseguiria trocar o código. `/primeiro-acesso` é aceito pela allow-list por estar sob o `site_url`.
+- **Sessão do admin não muda** ao chamar `signInWithOtp` para outro e-mail (mesmo `access_token` antes e depois).
+- Com a sessão do link, o convidado define a senha com `auth.updateUser({ password })` sem reautenticar (`secure_password_change = false`).
+- O Auth grava o e-mail em minúsculas antes de chamar o hook; ainda assim, comparar via `citext` (RN-03).
+- Reenvio por não-admin via API não é barrável no banco (OPEN-04, resolvido): o efeito é só um novo link no e-mail do convidado; acesso continua dependendo de `aceitar_convite()`.
+- Reenvio em sequência rápida para o mesmo e-mail → `429 over_email_send_rate_limit` (`max_frequency`); a tela de convites deve tratar com mensagem amigável.
+- O e-mail sai com o template padrão em inglês ("Your sign-in link"). Ver pendência em **E-mail**.
+- Payload do hook: `event->'user'->>'email'` (também `id`, `app_metadata.provider`, `metadata.name = 'before-user-created'`).
+
 ### E-mail
 
 - Local: os e-mails caem no Mailpit (http://127.0.0.1:54324).
 - Remoto (staging/produção): o SMTP padrão do Supabase tem limite de poucos e-mails por hora; configurar SMTP próprio antes de usar com a escola.
 - O link do e-mail expira em `otp_expiry` (1 h no `config.toml`); se vencer dentro dos 7 dias do convite, o admin reenvia.
+- **Recuperação de senha em pt-BR (tarefa T-18b):** o template *recovery* (RF-01) também é em inglês por padrão; mesmo tratamento do convite, em `supabase/templates/recuperacao.html`.
+- **Template em pt-BR (achado do T-01, tarefa T-18a):** o convite usa o template *magic link* do Auth, que por padrão é em inglês. Local: `[auth.email.template.magic_link]` no `config.toml` apontando para `supabase/templates/convite.html`; remoto: mesmo conteúdo no painel de cada projeto. Como o *magic link* também é o e-mail de qualquer login por OTP, e o sistema só usa OTP para convite, o texto pode falar diretamente do convite.
 
 ### Primeiro admin (RN-01)
 
@@ -86,3 +106,42 @@ O modelo da auditoria é da **spec 006** (RF-01 a RF-12, RF-17). O **registro** 
   - em `item`: se só mudaram contadores/`atualizado_em` e `current_setting('app.origem', true) = 'movimentacao'`, não grava (RF-05);
   - grava `motivo = nullif(current_setting('app.motivo', true), '')` (RF-17);
   - nunca copia colunas fora da tabela auditada (RF-09).
+
+## Como foi implementado (2026-10-23)
+
+Decisões de implementação tomadas durante a entrega, além do que está acima.
+
+### Banco
+
+| Migration | Conteúdo |
+|---|---|
+| `perfis_e_auditoria` | enums, `profiles`, `auditoria` imutável, `eh_admin_ativo()`, `usuario_ativo()`, `definir_atualizado_em()` |
+| `auditar_profiles` | trigger genérico `auditar(colunas…)`; em `profiles` só `perfil`/`status` |
+| `profiles_rls` | `select` da própria linha ou admin ativo; nenhuma escrita direta |
+| `gestao_usuarios` | `alterar_status_usuario`, `alterar_perfil_usuario` |
+| `editar_perfil` | `atualizar_meu_perfil`, `atualizar_usuario` |
+| `convite` | `convite`, view `convite_situacao`, `convidar_usuario`, `cancelar_convite`; edição de perfil passa a checar matrícula de convite em aberto |
+| `aceitar_convite` | `aceitar_convite()` |
+| `hook_cadastro_por_convite` | `validar_cadastro_por_convite(event)` |
+
+- **Funções internas** (`preparar_alteracao_usuario`, `garantir_admin_ativo`, `aplicar_edicao_perfil`, `matricula_em_uso`, `travar_email_convite`, `travar_matricula`): `execute` revogado de `anon`/`authenticated`; só as RPCs `SECURITY DEFINER` as chamam.
+- **RF-07 / P-04:** alterar perfil/status trava primeiro os admins ativos (`FOR UPDATE` por `id`) e só depois confere se o autor ainda é admin. Teste de concorrência validado por mutação (sem a trava, falha).
+- **RF-14 / RN-05:** locks consultivos `pg_advisory_xact_lock(1001, hash(e-mail))` e `(1002, hash(matrícula))`, sempre nessa ordem. Também validados por mutação.
+- **CA-05:** o único admin ativo que tenta se rebaixar/inativar recebe "Você é o único administrador ativo…"; com outros admins, a mensagem é a de RF-06.
+- **`aceitar_convite()` repetido** devolve o perfil existente (clique duplo, recarregar). O e-mail vem de `auth.users` pelo `auth.uid()`, nunca de parâmetro.
+- **`citext` com `search_path = ''`:** o operador `=` do `citext` fica em `extensions`; sem qualificar, o Postgres cai em `text = text` e diferencia maiúsculas. Comparações de e-mail usam `operator(extensions.=)`.
+- **Regras transversais** em `supabase/tests/000_seguranca.test.sql`: RLS em toda tabela, `search_path` fixo em toda `SECURITY DEFINER`, `anon` sem `execute` nelas, views com `security_invoker`. Vale para as próximas specs.
+- **Suíte de concorrência** (`supabase/tests/concorrencia/`, Vitest + `pg`): sessões `authenticated` reais com `request.jwt.claims`. Os registros de auditoria que ela gera ficam no banco local até o próximo `db reset`.
+
+### Front
+
+- `features/auth`: sessão (`SessaoProvider`/`useSessao`), login, recuperação/redefinição de senha, primeiro acesso, telas de status e guardas `RequerSessao` → `RequerAtivo` → `RequerAdmin`. Expõe só o necessário em `index.ts`.
+- `features/usuarios`: convites, usuários e meu perfil; importa de `auth` só a API pública.
+- Convidar = `convidar_usuario` + `signInWithOtp`. Se o e-mail falhar, o convite fica registrado e a tela orienta a reenviar.
+- `<select>` nativo nos formulários (simples de testar e acessível); diálogos via `useDialogo`, que mantém o conteúdo durante a animação de saída.
+- Testes de front simulam a camada `api`; o cliente Supabase real lança erro se usado em teste.
+- E2E (`web/e2e/001-convite.spec.ts`) roda contra a stack local; entra no CI com a spec-005/T-15.
+
+### Verificação de RLS (T-29)
+
+Com tokens reais de solicitante ativo, pendente e anônimo, pela API REST: 59 tentativas (ler convites/auditoria/perfis de outros, `PATCH`/`POST`/`DELETE` diretos, RPCs de admin, funções internas e o hook) — todas negadas; o solicitante lê só a própria linha de `profiles`.

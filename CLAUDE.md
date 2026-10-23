@@ -159,7 +159,7 @@ web/
 - Toda regra de negócio tem teste automatizado referenciando um `CA-xx` (Q-01). Nomeie o teste com o ID: `CA-03: aprovações simultâneas não reservam em dobro`.
 - Funções RPC e políticas RLS são testadas no banco com pgTAP (Q-02). Teste sempre o caminho **negado** (usuário comum, pendente, inativo), não só o feliz.
 - Concorrência de estoque precisa de teste com duas transações simultâneas.
-- CI (`.github/workflows/ci.yml`, Q-03): ESLint, Prettier, `tsc --noEmit`, Vitest e build do front; migrations do zero, `supabase db lint` e `supabase test db` no banco. O passo pgTAP só roda quando existir algum `.sql` em `supabase/tests/`. A suíte de concorrência e o Playwright entram no CI quando forem criados (spec-001/T-06a e spec-005/T-15).
+- CI (`.github/workflows/ci.yml`, Q-03): ESLint, Prettier, `tsc --noEmit`, Vitest e build do front; migrations do zero, `supabase db lint` e `supabase test db` no banco. O passo pgTAP só roda quando existir algum `.sql` em `supabase/tests/`; a suíte de concorrência (`npm run test:db:concorrencia`) roda no mesmo job, e `lint`/`format:check`/`typecheck` também cobrem `supabase/tests/concorrencia/`. O Playwright entra no CI quando for criado (spec-005/T-15).
 - Fluxo principal tem E2E: solicitar → aprovar → retirar → devolver (Q-04).
 - Uma tarefa só está pronta quando os testes passam e a spec reflete o que foi entregue.
 
@@ -189,6 +189,7 @@ npm run lint
 npm run typecheck                   # tsc --noEmit
 npm run test                        # Vitest
 npm run test:e2e                    # Playwright
+npm run test:db:concorrencia        # concorrência no banco (Vitest + pg, requer supabase start)
 ```
 
 > Ajuste os nomes dos scripts acima se o `package.json` usar outros.
