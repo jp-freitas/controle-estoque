@@ -447,8 +447,9 @@ additional_redirect_urls = [
 ]
 
 [remotes.staging.auth.email]
-# Remoto mais próximo da produção: confirmação de e-mail ligada e intervalo padrão entre envios.
-enable_confirmations = true
+# Intervalo padrão entre envios. A confirmação de e-mail fica desligada como no local:
+# ligada, o primeiro e-mail do convite sai pelo template "confirmation" (em inglês)
+# em vez do "magic_link" (ver specs/001-Auth/plan.md, E-mail).
 max_frequency = "1m0s"
 
 # SMTP próprio (Gmail com senha de app): no plano gratuito, templates personalizados
