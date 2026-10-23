@@ -68,6 +68,7 @@ Confirmado localmente; o fluxo acima se mantém, com estes ajustes:
 - **Sessão do admin não muda** ao chamar `signInWithOtp` para outro e-mail (mesmo `access_token` antes e depois).
 - Com a sessão do link, o convidado define a senha com `auth.updateUser({ password })` sem reautenticar (`secure_password_change = false`).
 - O Auth grava o e-mail em minúsculas antes de chamar o hook; ainda assim, comparar via `citext` (RN-03).
+- Reenvio por não-admin via API não é barrável no banco (OPEN-04, resolvido): o efeito é só um novo link no e-mail do convidado; acesso continua dependendo de `aceitar_convite()`.
 - Reenvio em sequência rápida para o mesmo e-mail → `429 over_email_send_rate_limit` (`max_frequency`); a tela de convites deve tratar com mensagem amigável.
 - O e-mail sai com o template padrão em inglês ("Your sign-in link"). Ver pendência em **E-mail**.
 - Payload do hook: `event->'user'->>'email'` (também `id`, `app_metadata.provider`, `metadata.name = 'before-user-created'`).
@@ -77,6 +78,7 @@ Confirmado localmente; o fluxo acima se mantém, com estes ajustes:
 - Local: os e-mails caem no Mailpit (http://127.0.0.1:54324).
 - Remoto (staging/produção): o SMTP padrão do Supabase tem limite de poucos e-mails por hora; configurar SMTP próprio antes de usar com a escola.
 - O link do e-mail expira em `otp_expiry` (1 h no `config.toml`); se vencer dentro dos 7 dias do convite, o admin reenvia.
+- **Recuperação de senha em pt-BR (tarefa T-18b):** o template *recovery* (RF-01) também é em inglês por padrão; mesmo tratamento do convite, em `supabase/templates/recuperacao.html`.
 - **Template em pt-BR (achado do T-01, tarefa T-18a):** o convite usa o template *magic link* do Auth, que por padrão é em inglês. Local: `[auth.email.template.magic_link]` no `config.toml` apontando para `supabase/templates/convite.html`; remoto: mesmo conteúdo no painel de cada projeto. Como o *magic link* também é o e-mail de qualquer login por OTP, e o sistema só usa OTP para convite, o texto pode falar diretamente do convite.
 
 ### Primeiro admin (RN-01)

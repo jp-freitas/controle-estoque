@@ -78,6 +78,7 @@ O plano depende de dois comportamentos do Supabase Auth que precisam ser confirm
 - [x] **T-17** 🧪 pgTAP `001_hook_cadastro.test.sql` — **CA-01**: hook `before_user_created` rejeita e-mail sem convite em aberto (inclui expirado e cancelado) e aceita e-mail com convite válido.
 - [x] **T-18** 🗄️ Função do hook + `[auth.hook.before_user_created]` no `config.toml`.
 - [x] **T-18a** 🗄️ **RF-11**: template do e-mail de convite em pt-BR (achado do T-01). O convite usa o template *magic link* do Auth, que é em inglês por padrão. Criar `supabase/templates/convite.html` (assunto e corpo em pt-BR, link `{{ .ConfirmationURL }}`, aviso de que o convite vale 7 dias e o link 1 h) e apontar `[auth.email.template.magic_link]` no `config.toml` (`subject` + `content_path`). Verificar no Mailpit. Nos projetos remotos, o mesmo template é configurado no painel quando staging/produção forem criados.
+- [ ] **T-18b** 🗄️ **RF-01**: template do e-mail de recuperação de senha em pt-BR (decisão de 2026-10-23). `supabase/templates/recuperacao.html` + `[auth.email.template.recovery]` no `config.toml`; verificar no Mailpit junto com a T-22. Remoto: painel de cada projeto.
 - [x] **T-19** 🔍 Rodar `supabase db reset` + `supabase test db` completos; `get_advisors` não se aplica (só local) — revisar manualmente: RLS em todas as tabelas novas, `search_path` fixo em toda `SECURITY DEFINER`, `grant execute` só para `authenticated`.
 - [x] **T-20** 🗄️ `npm run db:types` e commit de `web/src/types/database.ts`.
 
