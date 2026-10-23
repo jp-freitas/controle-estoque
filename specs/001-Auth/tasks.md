@@ -90,9 +90,9 @@ Estrutura em `web/src/features/auth/` e `web/src/features/usuarios/` (`component
 - [x] **T-22** 🖥️ **RF-01**: telas de login, logout e recuperação de senha (`resetPasswordForEmail` com `redirectTo = window.location.origin`), Zod com mensagens em pt-BR. Não há tela de cadastro (RF-03).
 - [x] **T-23** 🖥️ **RF-04 / RF-08**: guarda de rotas por status e perfil; telas "Aguardando liberação" e "Acesso desativado". Teste Vitest de cada caso.
 - [x] **T-24** 🖥️ **RF-11**: tela `/primeiro-acesso` (definir senha → `aceitar_convite()`), com mensagens para convite expirado/cancelado.
-- [ ] **T-25** 🖥️ **RF-10, RF-13**: área do admin "Convites": formulário (e-mail, nome, matrícula opcional, perfil padrão `solicitante`), lista com situação, reenviar (só válido) e cancelar.
-- [ ] **T-26** 🖥️ **RF-05, RF-09, RF-16**: área do admin "Usuários": lista com filtros por status/perfil, aprovar, inativar/reativar, promover/rebaixar, editar nome/matrícula; erros das RPCs exibidos como vêm do banco.
-- [ ] **T-27** 🖥️ **RF-15**: tela "Meu perfil" (nome e matrícula editáveis; e-mail, perfil e status só leitura).
+- [x] **T-25** 🖥️ **RF-10, RF-13**: área do admin "Convites": formulário (e-mail, nome, matrícula opcional, perfil padrão `solicitante`), lista com situação, reenviar (só válido) e cancelar.
+- [x] **T-26** 🖥️ **RF-05, RF-09, RF-16**: área do admin "Usuários": lista com filtros por status/perfil, aprovar, inativar/reativar, promover/rebaixar, editar nome/matrícula; erros das RPCs exibidos como vêm do banco.
+- [x] **T-27** 🖥️ **RF-15**: tela "Meu perfil" (nome e matrícula editáveis; e-mail, perfil e status só leitura).
 
 ## Fase 5 — E2E e fechamento
 

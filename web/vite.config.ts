@@ -14,6 +14,8 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
+    // Cada teste começa sem chamadas registradas nas simulações (vi.mock).
+    clearMocks: true,
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
   },
 })

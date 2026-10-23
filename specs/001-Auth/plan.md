@@ -8,13 +8,13 @@ A recuperação de senha por e-mail envia um link que volta para o front. Cada p
 
 | Projeto Supabase | Site URL | Additional Redirect URLs |
 |---|---|---|
-| local (`supabase/config.toml`) | `http://127.0.0.1:5173` | `http://localhost:5173` |
+| local (`supabase/config.toml`) | `http://127.0.0.1:5173` | `http://localhost:5173/**`, `http://127.0.0.1:5173/**` |
 | staging (a criar) | domínio de preview da Vercel | `https://<projeto>-*-<time>.vercel.app/**` |
 | produção (planejado) | domínio de produção | — |
 
 - No front, o `redirectTo` de `resetPasswordForEmail` usa `window.location.origin`, para funcionar em qualquer ambiente sem variável extra.
 - Configurado em **Authentication → URL Configuration** de cada projeto remoto (configuração de projeto, não schema; não há migration).
-- O link do convite (RF-11) também volta para essas URLs.
+- O link do convite (RF-11) também volta para essas URLs. Os destinos têm caminho (`/primeiro-acesso`, `/redefinir-senha`), por isso as URLs adicionais usam `/**`: sem isso o Auth descarta o destino e manda para a raiz do `site_url`.
 
 ## Convite (RF-03, RF-10 a RF-14)
 

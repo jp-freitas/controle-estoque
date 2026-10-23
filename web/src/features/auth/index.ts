@@ -1,5 +1,6 @@
 // API pública da feature auth (spec-001). Outras partes do app importam daqui.
 export type { Perfil } from './api/sessaoApi'
+export { mensagemErroAuth } from './api/erroAuth'
 export { SessaoProvider } from './hooks/SessaoProvider'
 export { useSessao } from './hooks/sessaoContext'
 export { RequerAdmin, RequerAtivo, RequerSessao } from './components/Guardas'

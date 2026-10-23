@@ -3,6 +3,9 @@ import { screen } from '@testing-library/react'
 import { perfilFalso, renderizarRotas, sessaoFalsa } from '@/features/auth/testing'
 import { rotas } from './router'
 
+// As telas de admin buscam dados; aqui só importa a guarda.
+vi.mock('@/features/usuarios/api/usuariosApi')
+
 const sessao = sessaoFalsa()
 
 describe('T-23: guardas de rota', () => {
@@ -70,7 +73,7 @@ describe('T-23: guardas de rota', () => {
 
   test('admin ativo entra nas rotas de admin', async () => {
     renderizarRotas(rotas, '/admin/usuarios', { sessao, perfil: perfilFalso({ perfil: 'admin' }) })
-    expect(await screen.findByText(/Usuários \(T-26\)/)).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Usuários' })).toBeInTheDocument()
   })
 
   test('URL desconhecida na área logada → página não encontrada', async () => {

@@ -10,6 +10,7 @@ import {
   RequerAtivo,
   RequerSessao,
 } from '@/features/auth'
+import { ConvitesPage, MeuPerfilPage, UsuariosPage } from '@/features/usuarios'
 import { RootLayout } from './RootLayout'
 
 // spec-001/RF-08: rotas por sessão, status e perfil (a proteção real é a RLS).
@@ -31,14 +32,13 @@ export const rotas: RouteObject[] = [
             element: <RequerAtivo />,
             children: [
               { index: true, element: <p>Em construção.</p> },
-              // Substituídas pelas telas das tarefas T-25 a T-27.
-              { path: 'meu-perfil', element: <p>Meu perfil (T-27).</p> },
+              { path: 'meu-perfil', element: <MeuPerfilPage /> },
               {
                 path: 'admin',
                 element: <RequerAdmin />,
                 children: [
-                  { path: 'usuarios', element: <p>Usuários (T-26).</p> },
-                  { path: 'convites', element: <p>Convites (T-25).</p> },
+                  { path: 'usuarios', element: <UsuariosPage /> },
+                  { path: 'convites', element: <ConvitesPage /> },
                 ],
               },
               { path: '*', element: <p>Página não encontrada.</p> },
