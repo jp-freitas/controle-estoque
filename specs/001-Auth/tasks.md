@@ -29,8 +29,8 @@ O plano depende de dois comportamentos do Supabase Auth que precisam ser confirm
   - `profiles` (`id` → `auth.users`, `nome`, `email citext unique`, `matricula`, `perfil`, `status`, timestamps);
   - `auditoria` conforme spec-006/RF-01 e `plan.md` → Auditoria, com revokes e trigger de bloqueio de `update`/`delete`/`truncate` (spec-006/RF-10 a RF-12, P-06);
   - funções auxiliares `eh_admin_ativo()` e `usuario_ativo()` (`SECURITY DEFINER`, `search_path` fixo) usadas pelas políticas.
-- [ ] **T-04** 🧪 pgTAP `001_auditoria.test.sql` — **RN-02/CA-03, CA-06**: mudança de `perfil`/`status` grava linha em `auditoria` com antes/depois, autor e motivo (`app.motivo`), conforme `plan.md` → Auditoria; cobre também spec-006 CA-07, CA-08, CA-11 a CA-13 no que toca `profiles`; `update`/`delete` em `auditoria` é negado inclusive para admin.
-- [ ] **T-05** 🗄️ Trigger de auditoria em `profiles` (perfil/status) — base reutilizada pela spec 002 (`item`, `tipo_item`, `local`).
+- [x] **T-04** 🧪 pgTAP `001_auditoria.test.sql` — **RN-02/CA-03, CA-06**: mudança de `perfil`/`status` grava linha em `auditoria` com antes/depois, autor e motivo (`app.motivo`), conforme `plan.md` → Auditoria; cobre também spec-006 CA-07, CA-08, CA-11 a CA-13 no que toca `profiles`; `update`/`delete` em `auditoria` é negado inclusive para admin.
+- [x] **T-05** 🗄️ Trigger de auditoria em `profiles` (perfil/status) — base reutilizada pela spec 002 (`item`, `tipo_item`, `local`).
 - [ ] **T-06a** 🧪 Suíte de concorrência: `supabase/tests/concorrencia/` com Vitest + `pg` (devDependency em `web/`), helper para abrir duas sessões autenticadas como usuários diferentes contra o Postgres local, script `npm run test:db:concorrencia` (ver `CLAUDE.md` → Banco). Usada por T-09, T-13 e pelas specs 004/005.
 - [ ] **T-06** 🗄️ `seed.sql`: primeiro admin (`auth.users` + `profiles` `admin`/`ativo`) e um solicitante de exemplo de cada status, com senha conhecida só para dev (RN-01).
 
