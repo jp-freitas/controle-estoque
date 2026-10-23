@@ -57,15 +57,15 @@ Legenda: 🧪 teste primeiro · 🗄️ banco · 🖥️ front · 🔍 validaç�
 
 ## Fase 4 — Front
 
-- [ ] **T-15** 🖥️ `web/src/shared/lib/erroRpc.ts` já existe (spec 001); acrescentar `23505` com mapa por constraint (tipo/local com nome repetido, patrimônio duplicado — CA-02). Teste Vitest.
-- [ ] **T-16** 🖥️ **RF-10, RF-11, CA-05**: `features/catalogo/` com busca, filtros (tipo, local, operante, disponibilidade), badge "Inoperante" sem botão de adicionar; hook público `useCatalogo` no `index.ts`. Testes Vitest dos filtros e da sinalização.
-- [ ] **T-17** 🖥️ **RF-03, RF-04**: `features/itens-admin/` — telas de tipos e locais (criar, editar, desativar).
-- [ ] **T-18** 🖥️ **RF-05, RF-07, RF-08, CA-08**: formulário de item (Zod; patrimônio ⇒ quantidade 1; `estoque_minimo` só para tipo consumível — spec-007/RF-08); exclusão negada oferece "Desativar".
-- [ ] **T-19** 🖥️ **RF-09, RF-14**: ajuste de quantidade com motivo; "Marcar inoperante" e "Reativar" (motivo obrigatório).
+- [x] **T-15** 🖥️ `web/src/shared/lib/erroRpc.ts` já existe (spec 001); acrescentar `23505` com mapa por constraint (tipo/local com nome repetido, patrimônio duplicado — CA-02). Teste Vitest.
+- [x] **T-16** 🖥️ **RF-10, RF-11, CA-05**: `features/catalogo/` com busca, filtros (tipo, local, operante, disponibilidade), badge "Inoperante" sem botão de adicionar; hook público `useCatalogo` no `index.ts`. Testes Vitest dos filtros e da sinalização.
+- [x] **T-17** 🖥️ **RF-03, RF-04**: `features/itens-admin/` — telas de tipos e locais (criar, editar, desativar).
+- [x] **T-18** 🖥️ **RF-05, RF-07, RF-08, CA-08**: formulário de item (Zod; patrimônio ⇒ quantidade 1; `estoque_minimo` só para tipo consumível — spec-007/RF-08); exclusão negada oferece "Desativar".
+- [x] **T-19** 🖥️ **RF-09, RF-14**: ajuste de quantidade com motivo; "Marcar inoperante" e "Reativar" (motivo obrigatório).
 
 ## Fase 5 — Fechamento
 
-- [ ] **T-20** 🔍 Teste manual com token de solicitante: tentar `insert`/`update`/`delete` em `item`, `tipo_item`, `local` e `update` nos contadores pela API REST (CA-06).
+- [x] **T-20** 🔍 Teste manual com token de solicitante: tentar `insert`/`update`/`delete` em `item`, `tipo_item`, `local` e `update` nos contadores pela API REST (CA-06).
 - [ ] **T-21** 🔍 CI verde (lint, Prettier, `typecheck`, Vitest, `supabase test db`).
 - [ ] **T-22** 📝 Atualizar `spec.md`/`plan.md` com o entregue e abrir PR `spec-002-catalogo`.
 

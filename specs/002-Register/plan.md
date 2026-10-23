@@ -107,3 +107,16 @@ Esta spec liga o trigger `auditar()` em `item`, `tipo_item` e `local` (spec-006/
 ## Testes
 
 pgTAP `002_*.test.sql`: CA-01 a CA-08, CA-10 e CA-11 (CA-09 é testado na spec 007, junto com o relatório), sempre com o caminho negado (solicitante, pendente, inativo — CA-06) e tentativas de `update` direto nos contadores e em `operante`. Concorrência entre ajuste e retirada fica na spec 005 (CA-11 de lá).
+
+## Como foi implementado
+
+Migrations (em ordem): `catalogo_tipo_local`, `catalogo_item_movimentacao`, `catalogo_auditoria`, `ajustar_quantidade_item`, `alterar_operancia_item`, `catalogo_view`.
+
+- **Triggers de regra:** `validar_item()` (before insert/update em `item`: patrimônio normalizado e = 1 no cadastro, RN-03 e estoque mínimo só consumível) e `validar_tipo_local()` (before update em `tipo_item`/`local`: CA-13 com a lista dos itens em `detail`, CA-14). Ambas `SECURITY DEFINER`, `search_path` fixo, sem `execute` para `anon`/`authenticated`.
+- **RN-05:** `validar_item()` lê tipo e local com `for share`; teste de concorrência em `supabase/tests/concorrencia/002_catalogo.test.ts` (4 casos), **validado por mutação** (sem o `for share`, os 4 falham).
+- **Privilégios:** `item` com `grant insert/update` por coluna (contadores e `operante` fora; `quantidade_total` só no insert). Até o admin recebe `42501` ao tentar mudar contadores ou `operante` direto.
+- **Ajuste:** `ajustar_quantidade_item` rejeita valor igual ao atual e negativo; patrimônio aceita 0 ou 1. A movimentação guarda a diferença com sinal.
+- **Auditoria:** `auditar()` recriada com a regra `app.origem = 'movimentacao'`; os motivos de ajuste e operância são limpos (`app.motivo = ''`) logo depois do `update`, para não vazarem para outras alterações da mesma transação.
+- **Front:** `features/catalogo` (pública: `useCatalogo`, `chaveCatalogo`, `podeSolicitar`, `ROTULO_ESTADO`, tipo `ItemCatalogo`) e `features/itens-admin` (Itens, Tipos, Locais). O catálogo é a página inicial; o admin usa a mesma view para a lista de itens. Exclusão que falha por histórico (`23503`) troca o diálogo para "Desativar" (CA-08). `erroRpc` traduz `23505` por constraint.
+- **Testes:** pgTAP `002_tipo_local` (37), `002_item` (72), `002_ajuste` (24), `002_operancia` (20), `002_auditoria` (16), `002_catalogo` (13); Vitest do catálogo (9) e das telas de admin (19); verificação manual no navegador (11 passos) e T-20 pela API REST com tokens reais (92 tentativas indevidas, todas negadas).
+
