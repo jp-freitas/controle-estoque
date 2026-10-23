@@ -94,7 +94,7 @@ export function ItensPage() {
   })
 
   return (
-    <div className="grid max-w-6xl gap-6">
+    <div className="grid max-w-7xl gap-6">
       <div className="flex flex-wrap items-center gap-4">
         <h2 className="text-xl font-semibold">Itens</h2>
         <Button className="ml-auto" onClick={() => abrir({ tipo: 'form', item: null })}>
@@ -168,34 +168,36 @@ export function ItensPage() {
                   {!i.operante && <Badge variant="destructive">Inoperante</Badge>}
                   {!i.ativo && <Badge variant="secondary">Desativado</Badge>}
                 </TableCell>
-                <TableCell className="space-x-1 text-right whitespace-nowrap">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => abrir({ tipo: 'form', item: i })}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => abrir({ tipo: 'ajuste', item: i })}
-                  >
-                    Ajustar quantidade
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => abrir({ tipo: 'operancia', item: i })}
-                  >
-                    {i.operante ? 'Marcar inoperante' : 'Reativar uso'}
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => confirmar(alternarAtivo(i))}>
-                    {i.ativo ? 'Desativar' : 'Reativar'}
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => confirmar(acaoExcluir(i))}>
-                    Excluir
-                  </Button>
+                <TableCell>
+                  <div className="flex min-w-64 flex-wrap justify-end gap-1">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => abrir({ tipo: 'form', item: i })}
+                    >
+                      Editar
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => abrir({ tipo: 'ajuste', item: i })}
+                    >
+                      Ajustar quantidade
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => abrir({ tipo: 'operancia', item: i })}
+                    >
+                      {i.operante ? 'Marcar inoperante' : 'Reativar uso'}
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => confirmar(alternarAtivo(i))}>
+                      {i.ativo ? 'Desativar' : 'Reativar'}
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => confirmar(acaoExcluir(i))}>
+                      Excluir
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
@@ -364,7 +366,10 @@ function AlterarOperancia({
         rotulo={reativar ? 'Motivo' : 'Motivo (opcional)'}
         value={motivo}
         erro={erroMotivo}
-        onChange={(e) => setMotivo(e.target.value)}
+        onChange={(e) => {
+          setMotivo(e.target.value)
+          setErroMotivo(undefined)
+        }}
       />
       <MensagemErro erro={alterar.isError ? erroRpc(alterar.error) : null} />
       <DialogFooter>
