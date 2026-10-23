@@ -23,8 +23,8 @@ O plano depende de dois comportamentos do Supabase Auth que precisam ser confirm
 
 ## Fase 1 — Base: perfis, auditoria e primeiro admin (RF-02, RF-06, RN-01, RN-02)
 
-- [ ] **T-02** 🧪 pgTAP `001_profiles_schema.test.sql`: estrutura de `profiles` (colunas, enums `perfil` e `status_usuario`, `matricula` nullable), RLS habilitado em `profiles` e `auditoria`, índice único parcial de `matricula`.
-- [ ] **T-03** 🗄️ Migration `001_perfis_e_auditoria`:
+- [x] **T-02** 🧪 pgTAP `001_profiles_schema.test.sql`: estrutura de `profiles` (colunas, enums `perfil` e `status_usuario`, `matricula` nullable), RLS habilitado em `profiles` e `auditoria`, índice único parcial de `matricula`.
+- [x] **T-03** 🗄️ Migration `001_perfis_e_auditoria`:
   - extensão `citext`; enums `perfil` (`admin`, `solicitante`) e `status_usuario` (`pendente`, `ativo`, `inativo`);
   - `profiles` (`id` → `auth.users`, `nome`, `email citext unique`, `matricula`, `perfil`, `status`, timestamps);
   - `auditoria` conforme spec-006/RF-01 e `plan.md` → Auditoria, com revokes e trigger de bloqueio de `update`/`delete`/`truncate` (spec-006/RF-10 a RF-12, P-06);
