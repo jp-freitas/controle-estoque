@@ -16,10 +16,19 @@ export function RootLayout() {
         {ativo && (
           <nav aria-label="Principal" className="flex flex-wrap gap-4 text-sm">
             <NavLink to="/" end className={linkClasse}>
-              Início
+              Catálogo
             </NavLink>
             {perfil.perfil === 'admin' && (
               <>
+                <NavLink to="/admin/itens" className={linkClasse}>
+                  Itens
+                </NavLink>
+                <NavLink to="/admin/tipos" className={linkClasse}>
+                  Tipos
+                </NavLink>
+                <NavLink to="/admin/locais" className={linkClasse}>
+                  Locais
+                </NavLink>
                 <NavLink to="/admin/usuarios" className={linkClasse}>
                   Usuários
                 </NavLink>

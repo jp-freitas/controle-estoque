@@ -46,6 +46,9 @@ O administrador mantém o catálogo do inventário: tipos de item, locais e iten
 ## Regras de negócio
 - RN-01: Somente `admin` ativo escreve em `item`, `tipo_item` e `local`; usuários ativos leem.
 - RN-02: Alterações em item, tipo e local são auditadas (P-06). Mudanças apenas nos contadores `reservada` e `em_uso` não geram linha de auditoria (já estão em `movimentacao`).
+- RN-03: Um item **ativo** sempre tem tipo e local ativos. Cadastrar, editar ou reativar item com tipo ou local desativado é rejeitado; desativar tipo ou local que ainda tem itens ativos é rejeitado, informando quantos itens precisam ser movidos ou desativados antes.
+- RN-04: O atributo `consumivel` de um tipo só pode mudar enquanto nenhum item (ativo ou desativado) usar o tipo. Ele decide se a retirada baixa o total ou exige devolução (spec-005).
+- RN-05: As regras RN-03 e RN-04 valem também sob concorrência (ex.: cadastrar item num local enquanto outro admin o desativa).
 
 ## Critérios de aceite
 CA-01  Dado um admin
@@ -90,6 +93,19 @@ CA-11  Dado um item inoperante
        Quando o admin tenta reativá-lo sem motivo
        Então a operação é rejeitada; com motivo, o item volta a `operante = true` e a auditoria registra o motivo.
 
+CA-12  Dado um local desativado
+       Quando o admin cadastra um item nele, move um item para ele ou reativa um item que está nele
+       Então a operação é rejeitada ("Local desativado"); o mesmo vale para tipo desativado.
+
+CA-13  Dado um local com 3 itens ativos
+       Quando o admin tenta desativá-lo
+       Então a operação é rejeitada informando os 3 itens; depois de movê-los ou desativá-los, a desativação é aceita.
+       O mesmo vale para tipo de item.
+
+CA-14  Dado o tipo "Ferramenta" com ao menos um item
+       Quando o admin tenta torná-lo consumível
+       Então a operação é rejeitada; um tipo sem itens pode mudar.
+
 ## Fora de escopo
 Importação em lote por planilha, fotos dos itens, QR code/etiquetas.
 
@@ -97,4 +113,7 @@ Importação em lote por planilha, fotos dos itens, QR code/etiquetas.
 - **OPEN-01 (resolvido em 2026-10-19):** `estado` é lista fechada (`novo`, `bom`, `regular`, `ruim`). Refletido em RF-05.
 - **OPEN-02 (resolvido em 2026-10-19):** Importação por CSV fica fora da v1, coerente com "Fora de escopo".
 - **OPEN-03 (resolvido em 2026-10-19):** Itens desativados somem do catálogo para não-admin; admin vê com filtro. Inoperantes continuam visíveis e sinalizados. Refletido em RF-10 e CA-10.
+- **OPEN-04 (resolvido em 2026-10-23):** Item não pode ser cadastrado, movido ou reativado em tipo/local desativado. Refletido em RN-03 e CA-12.
+- **OPEN-05 (resolvido em 2026-10-23):** Desativar tipo/local com itens ativos é bloqueado até mover ou desativar os itens. Refletido em RN-03 e CA-13.
+- **OPEN-06 (resolvido em 2026-10-23):** `consumivel` só muda em tipo sem itens. Refletido em RN-04 e CA-14.
 - Reativação de inoperante com motivo obrigatório (decisão de spec-005/OPEN-03) refletida em RF-14 e CA-11.
