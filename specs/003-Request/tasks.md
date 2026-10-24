@@ -46,8 +46,8 @@ Legenda: 🧪 teste primeiro · 🗄️ banco · 🖥️ front · 🔍 validaç�
 ## Fase 4 — Fechamento
 
 - [x] **T-13** 🔍 Teste manual com token de solicitante: ler solicitações de outro usuário e chamar `insert` direto em `solicitacao` pela API REST (CA-07).
-- [ ] **T-14** 🔍 CI verde.
-- [ ] **T-15** 📝 Atualizar `spec.md`/`plan.md` e abrir PR `spec-003-solicitacao`.
+- [x] **T-14** 🔍 CI verde.
+- [x] **T-15** 📝 Atualizar `spec.md`/`plan.md` e abrir PR `spec-003-solicitacao`.
 
 ---
 
