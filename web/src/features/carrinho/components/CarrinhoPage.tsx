@@ -154,7 +154,7 @@ function Linha({
           </Badge>
         )}
         <p className="text-muted-foreground text-sm">Disponível: {l.disponivel}</p>
-        {motivo && <p className="text-destructive text-sm">{motivo}</p>}
+        {motivo && <p className="text-destructive text-sm">Recusado: {motivo}</p>}
       </TableCell>
       <TableCell>
         {/* RF-04: não passa do disponível exibido (o banco confere de novo) */}

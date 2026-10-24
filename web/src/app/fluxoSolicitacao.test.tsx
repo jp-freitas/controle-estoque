@@ -101,7 +101,7 @@ describe('T-11: do catálogo ao envio', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Alguns itens não podem ser solicitados.',
     )
-    expect(within(linhaDe('Régua')).getByText('Disponível: 1.')).toBeInTheDocument()
+    expect(within(linhaDe('Régua')).getByText('Recusado: Disponível: 1.')).toBeInTheDocument()
     expect(localStorage.getItem(CHAVE)).not.toBeNull()
   })
 
