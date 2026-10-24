@@ -24,10 +24,11 @@ Legenda: 🧪 teste primeiro · 🗄️ banco · 🖥️ front · 🔍 validaç�
   - **CA-07**: aprovar de novo → status inválido, sem reserva duplicada;
   - **CA-09**: item ficou inoperante → rejeitado;
   - **CA-10**: soma aprovada 0 → orienta a recusar;
+  - **CA-13**: solicitante inativado ou pendente depois do envio → rejeitado; recusa permitida;
   - payload sem todas as linhas → rejeitado; `aprovador_id`, `data_decisao`, `observacao_decisao` gravados;
   - nenhuma linha nova em `auditoria` (spec-006/CA-04).
 - [ ] **T-04** 🗄️ RPC `aprovar_solicitacao(id, itens, observacao)` com bloqueio solicitação → itens por `id` e `app.origem`.
-- [ ] **T-05** 🧪 Concorrência `supabase/tests/concorrencia/004-aprovacao.test.ts` — **CA-03**: duas sessões de admins diferentes aprovam, ao mesmo tempo, solicitações do mesmo item com estoque para uma; exatamente uma conclui, a outra falha, `reservada` correto e CHECK nunca violado.
+- [ ] **T-05** 🧪 Concorrência `supabase/tests/concorrencia/004-aprovacao.test.ts` — **CA-03**: duas sessões de admins diferentes aprovam, ao mesmo tempo, solicitações do mesmo item com estoque para uma; exatamente uma conclui, a outra falha, `reservada` correto e CHECK nunca violado. **RN-03**: professor cancela × admin aprova a mesma solicitação → sem reserva órfã.
 
 ## Fase 3 — Recusar e cancelar (RF-08, RF-10, RN-03)
 
@@ -78,3 +79,4 @@ Legenda: 🧪 teste primeiro · 🗄️ banco · 🖥️ front · 🔍 validaç�
 | CA-10 | T-03 |
 | CA-11 | T-09 |
 | CA-12 | T-09 |
+| CA-13 | T-03 |

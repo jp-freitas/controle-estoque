@@ -27,6 +27,7 @@ O administrador analisa solicitações pendentes e decide aprovar (total ou parc
 - RF-10: RPC `cancelar_solicitacao_aprovada(id, motivo)` (admin): solicitação `aprovada` e sem retirada volta a `cancelada`, liberando `reservada` e gravando `movimentacao` tipo `liberacao_reserva`.
 - RF-11: Aprovação parcial exige que o professor veja, no detalhe da solicitação, a quantidade aprovada por item e a observação geral da aprovação, se houver. Não há justificativa por item.
 - RF-12: Estado terminal para o professor: ao ser aprovada ou recusada, a solicitação aparece com o novo status em "Minhas solicitações".
+- RF-14: Só se aprova solicitação de quem **ainda está ativo**. Se o solicitante foi inativado ou voltou a pendente depois do envio, a aprovação é rejeitada e a fila sinaliza a situação; recusar continua permitido.
 - RF-13: A reserva de uma solicitação aprovada **não expira** automaticamente. O admin vê a lista de aprovadas aguardando retirada, com há quantos dias cada uma foi aprovada, e cancela pelo RF-10 se necessário.
 
 ## Regras de negócio
@@ -79,10 +80,16 @@ CA-11  Dado uma aprovação parcial com observação "Só há 2 em estoque"
 CA-12  Dado uma solicitação aprovada há 10 dias e não retirada
        Então continua `aprovada`, com a reserva mantida, e aparece na lista de aguardando retirada com "10 dias".
 
+CA-13  Dado uma solicitação pendente de um professor que foi inativado depois do envio
+       Quando o admin tenta aprová-la
+       Então a operação é rejeitada ("O solicitante não está ativo; recuse a solicitação.") e nada muda;
+       a recusa continua permitida.
+
 ## Fora de escopo
 Notificação por e-mail ao professor ou ao admin (extra futuro), aviso/selo de novidade no sistema, aprovação em duas etapas, delegação de aprovação, expiração automática de reserva.
 
 ## Pontos em aberto
 - **OPEN-01 (resolvido em 2026-10-19):** Sem justificativa por item; a aprovação tem uma observação geral opcional, visível ao professor. Refletido em RF-04, RF-11 e CA-11.
 - **OPEN-02 (resolvido em 2026-10-19):** A reserva não expira na v1; o admin acompanha a lista de aguardando retirada e cancela pelo RF-10. Refletido em RF-13 e CA-12.
+- **OPEN-04 (resolvido em 2026-10-24):** Solicitante inativado ou pendente depois do envio não tem a solicitação aprovada; o admin recusa. Refletido em RF-14 e CA-13.
 - **OPEN-03 (resolvido em 2026-10-19):** Sem aviso/notificação na v1; o professor vê o novo status em "Minhas solicitações" (RF-12).
