@@ -50,3 +50,16 @@ Trava a solicitação e depois os itens em ordem de `id`; só `aprovada` (sem re
 - pgTAP `004_*.test.sql`: CA-01, CA-02, CA-04 a CA-12, com caminho negado (solicitante, admin pendente/inativo).
 - pgTAP de invariante (RN-03): para cada item, `quantidade_reservada` = soma de `quantidade_aprovada` das solicitações `aprovada` — rodado ao fim de cada cenário.
 - Concorrência (`supabase/tests/concorrencia/`): **CA-03** — duas sessões aprovando solicitações do mesmo item com estoque para uma; exatamente uma conclui, sem reserva dupla. Também **RN-03**: o professor cancelando (spec 003) enquanto o admin aprova a mesma solicitação — as duas RPCs travam a `solicitacao`, então uma espera a outra e nunca sobra reserva de solicitação cancelada.
+
+## Como foi implementado
+
+Migrations: `aprovacao_colunas`, `aprovar_solicitacao`, `recusar_cancelar_aprovada`, `aprovacao_views`.
+
+- **`aprovar_solicitacao`:** ordem das checagens — permissão, trava da solicitação, status, própria, solicitante ativo (RF-14), payload (todas as linhas, uma vez cada, 0 ≤ aprovada ≤ solicitada, soma > 0) e, com os itens travados em ordem de `id`, revalidação por item. Erros por item no `detail` ("Estoque insuficiente: disponível 2.", "Item inoperante.", "Item desativado."). `app.origem` é ligado só em volta do `update` dos contadores.
+- **Cancelar aprovada** grava o motivo também na `movimentacao` `liberacao_reserva`.
+- **Views** devolvem uma linha por solicitação com os itens em `jsonb` e filtram `eh_admin_ativo()` (o professor não vê nem as próprias pendentes na fila).
+- **Concorrência** (`concorrencia/004_aprovacao.test.ts`): CA-03 e as duas ordens de "professor cancela × admin aprova". **Validado por mutação**: sem o `for update` nos itens, a segunda aprovação só para no CHECK de estoque. A limpeza usa `limparComTriggersDesligados` (helper de teste; `movimentacao` é imutável).
+- **Front** (`features/aprovacao`): abas Pendentes e Aguardando retirada; quantidade sugerida = `min(solicitada, disponível)` (0 para inoperante/desativado); recusar e cancelar pelo `ConfirmarComMotivo` (`shared/ui`). "Minhas solicitações" mostra quantidade aprovada, observação, motivo da recusa e do cancelamento.
+- **Achados no navegador:** (1) o hook esperava o recarregamento da fila antes do `onSuccess` do clique; o cartão decidido saía da tela e a mensagem se perdia — agora o recarregamento não é esperado; (2) "Minhas solicitações", fila e aguardando usam `staleTime: 0`, porque mudam pela ação de outra pessoa.
+- **Testes:** pgTAP `004_schema` (13), `004_aprovar` (41), `004_recusar_cancelar` (28), `004_invariante` (4), `004_leitura` (19); concorrência 3; Vitest 11 (`app/fluxoAprovacao.test.tsx`); navegador 7 passos; T-16: 40 tentativas indevidas pela API REST, todas negadas.
+

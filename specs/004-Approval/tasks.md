@@ -50,14 +50,14 @@ Legenda: 🧪 teste primeiro · 🗄️ banco · 🖥️ front · 🔍 validaç�
 
 ## Fase 5 — Front
 
-- [ ] **T-12** 🖥️ **RF-03**: `features/aprovacao/` — fila de pendentes.
-- [ ] **T-13** 🖥️ **RF-04 a RF-08**: tela de decisão (quantidade por linha pré-preenchida com `min(solicitada, disponível)`, observação opcional, aprovar/recusar com motivo); erros por item via `erroRpc.ts`. Testes Vitest do formulário.
-- [ ] **T-14** 🖥️ **RF-10, RF-13**: lista de aprovadas aguardando retirada com dias e ação de cancelar (motivo).
-- [ ] **T-15** 🖥️ **RF-11, RF-12**: detalhe em "Minhas solicitações" (spec 003) mostra quantidade aprovada, observação e motivo de recusa.
+- [x] **T-12** 🖥️ **RF-03**: `features/aprovacao/` — fila de pendentes.
+- [x] **T-13** 🖥️ **RF-04 a RF-08**: tela de decisão (quantidade por linha pré-preenchida com `min(solicitada, disponível)`, observação opcional, aprovar/recusar com motivo); erros por item via `erroRpc.ts`. Testes Vitest do formulário.
+- [x] **T-14** 🖥️ **RF-10, RF-13**: lista de aprovadas aguardando retirada com dias e ação de cancelar (motivo).
+- [x] **T-15** 🖥️ **RF-11, RF-12**: detalhe em "Minhas solicitações" (spec 003) mostra quantidade aprovada, observação e motivo de recusa.
 
 ## Fase 6 — Fechamento
 
-- [ ] **T-16** 🔍 Teste manual com token de solicitante chamando `aprovar_solicitacao` e lendo `fila_aprovacao` pela API REST (CA-04).
+- [x] **T-16** 🔍 Teste manual com token de solicitante chamando `aprovar_solicitacao` e lendo `fila_aprovacao` pela API REST (CA-04).
 - [ ] **T-17** 🔍 CI verde, incluindo a suíte de concorrência.
 - [ ] **T-18** 📝 Atualizar `spec.md`/`plan.md` e abrir PR `spec-004-aprovacao`.
 
