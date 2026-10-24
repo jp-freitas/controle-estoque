@@ -15,14 +15,14 @@ insert into public.local (id, nome) values ('00000000-0000-0000-0304-00000000f00
 insert into public.item (id, nome, tipo_id, local_id, quantidade_total) values
   ('00000000-0000-0000-0304-00000000e001', 'T-Lupa', (select id from public.tipo_item where nome = 'Ferramenta'),
    '00000000-0000-0000-0304-00000000f001', 5);
--- A 004 ainda não existe: os status são montados direto (tasks T-06)
-insert into public.solicitacao (id, solicitante_id, justificativa, status) values
-  ('00000000-0000-0000-0304-00000000d001', '00000000-0000-0000-0304-0000000000b1', 'Pendente', 'pendente'),
-  ('00000000-0000-0000-0304-00000000d002', '00000000-0000-0000-0304-0000000000b1', 'Aprovada', 'aprovada'),
-  ('00000000-0000-0000-0304-00000000d003', '00000000-0000-0000-0304-0000000000b1', 'Retirada', 'retirada'),
-  ('00000000-0000-0000-0304-00000000d004', '00000000-0000-0000-0304-0000000000b1', 'Recusada', 'recusada'),
-  ('00000000-0000-0000-0304-00000000d005', '00000000-0000-0000-0304-0000000000b2', 'Do Beto', 'pendente'),
-  ('00000000-0000-0000-0304-00000000d006', '00000000-0000-0000-0304-0000000000b1', 'Concluída', 'concluida');
+-- Os status são montados direto (tasks T-06; a recusa com motivo é exigida desde a spec 004)
+insert into public.solicitacao (id, solicitante_id, justificativa, status, motivo_recusa) values
+  ('00000000-0000-0000-0304-00000000d001', '00000000-0000-0000-0304-0000000000b1', 'Pendente', 'pendente', null),
+  ('00000000-0000-0000-0304-00000000d002', '00000000-0000-0000-0304-0000000000b1', 'Aprovada', 'aprovada', null),
+  ('00000000-0000-0000-0304-00000000d003', '00000000-0000-0000-0304-0000000000b1', 'Retirada', 'retirada', null),
+  ('00000000-0000-0000-0304-00000000d004', '00000000-0000-0000-0304-0000000000b1', 'Recusada', 'recusada', 'Sem estoque'),
+  ('00000000-0000-0000-0304-00000000d005', '00000000-0000-0000-0304-0000000000b2', 'Do Beto', 'pendente', null),
+  ('00000000-0000-0000-0304-00000000d006', '00000000-0000-0000-0304-0000000000b1', 'Concluída', 'concluida', null);
 insert into public.solicitacao_item (solicitacao_id, item_id, item_nome, quantidade_solicitada) values
   ('00000000-0000-0000-0304-00000000d001', '00000000-0000-0000-0304-00000000e001', 'T-Lupa', 2);
 
