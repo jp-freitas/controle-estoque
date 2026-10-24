@@ -117,6 +117,18 @@ describe('T-12 / T-13: fila e decisão', () => {
     expect(await screen.findByText('Solicitação de Ana aprovada.')).toBeInTheDocument()
   })
 
+  test('a mensagem de sucesso aparece mesmo com o cartão saindo da fila', async () => {
+    vi.mocked(api.listarFila)
+      .mockResolvedValueOnce([pendente({})])
+      .mockResolvedValue([])
+    vi.mocked(api.aprovarSolicitacao).mockResolvedValue()
+    renderizarRotas(rotas, '/admin/aprovacoes', sessaoAdmin)
+    await screen.findByRole('heading', { name: 'Ana' })
+    await userEvent.click(screen.getByRole('button', { name: 'Aprovar' }))
+    expect(await screen.findByText('Solicitação de Ana aprovada.')).toBeInTheDocument()
+    expect(await screen.findByText('Nenhuma solicitação pendente.')).toBeInTheDocument()
+  })
+
   test('quantidade acima da solicitada não chega a ser enviada', async () => {
     vi.mocked(api.listarFila).mockResolvedValue([pendente({})])
     renderizarRotas(rotas, '/admin/aprovacoes', sessaoAdmin)
