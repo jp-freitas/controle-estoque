@@ -122,6 +122,12 @@ isOneToOne: false
       referencedRelation: "item"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "movimentacao_solicitacao_id_fkey"
+      columns: ["solicitacao_id"]
+isOneToOne: false
+      referencedRelation: "solicitacao"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "movimentacao_usuario_id_fkey"
       columns: ["usuario_id"]
 isOneToOne: false
@@ -142,6 +148,58 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"solicitacao": {
+                  Row: {
+                    "cancelado_em": string | null,"criado_em": string,"id": string,"justificativa": string,"solicitante_id": string,"status": Database["public"]['Enums']["status_solicitacao"]
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "cancelado_em"?: string | null,"criado_em"?: string,"id"?: string,"justificativa": string,"solicitante_id": string,"status"?: Database["public"]['Enums']["status_solicitacao"]
+                  }
+                  Update: {
+                    "cancelado_em"?: string | null,"criado_em"?: string,"id"?: string,"justificativa"?: string,"solicitante_id"?: string,"status"?: Database["public"]['Enums']["status_solicitacao"]
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "solicitacao_solicitante_id_fkey"
+      columns: ["solicitante_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"solicitacao_item": {
+                  Row: {
+                    "id": string,"item_id": string,"item_nome": string,"quantidade_solicitada": number,"solicitacao_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "id"?: string,"item_id": string,"item_nome": string,"quantidade_solicitada": number,"solicitacao_id": string
+                  }
+                  Update: {
+                    "id"?: string,"item_id"?: string,"item_nome"?: string,"quantidade_solicitada"?: number,"solicitacao_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "solicitacao_item_item_id_fkey"
+      columns: ["item_id"]
+isOneToOne: false
+      referencedRelation: "catalogo"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "solicitacao_item_item_id_fkey"
+      columns: ["item_id"]
+isOneToOne: false
+      referencedRelation: "item"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "solicitacao_item_solicitacao_id_fkey"
+      columns: ["solicitacao_id"]
+isOneToOne: false
+      referencedRelation: "solicitacao"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"tipo_item": {
                   Row: {
@@ -372,6 +430,21 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"cancelar_solicitacao":
+{ Args: { "p_id": string }; Returns: {
+              "cancelado_em": string | null,
+"criado_em": string,
+"id": string,
+"justificativa": string,
+"solicitante_id": string,
+"status": Database["public"]['Enums']["status_solicitacao"]
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "solicitacao"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "convidar_usuario":
 { Args: { "p_email": string,"p_matricula": string,"p_nome": string,"p_perfil"?: Database["public"]['Enums']["perfil"] }; Returns: {
               "aceito_em": string | null,
@@ -396,6 +469,9 @@ isOneToOne: false
                            },
 "eh_admin_ativo":
 { Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"enviar_solicitacao":
+{ Args: { "p_itens": Json,"p_justificativa": string }; Returns: string
                            },
 "garantir_admin_ativo":
 { Args: Record<PropertyKey, never>; Returns: undefined
@@ -434,7 +510,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "estado_item": "novo"|"bom"|"regular"|"ruim","perfil": "admin"|"solicitante","status_usuario": "pendente"|"ativo"|"inativo","tipo_movimentacao": "ajuste"|"reserva"|"liberacao_reserva"|"retirada"|"devolucao"
+            "estado_item": "novo"|"bom"|"regular"|"ruim","perfil": "admin"|"solicitante","status_solicitacao": "pendente"|"aprovada"|"retirada"|"concluida"|"cancelada"|"recusada","status_usuario": "pendente"|"ativo"|"inativo","tipo_movimentacao": "ajuste"|"reserva"|"liberacao_reserva"|"retirada"|"devolucao"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -554,7 +630,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "estado_item": ["novo", "bom", "regular", "ruim"],"perfil": ["admin", "solicitante"],"status_usuario": ["pendente", "ativo", "inativo"],"tipo_movimentacao": ["ajuste", "reserva", "liberacao_reserva", "retirada", "devolucao"]
+            "estado_item": ["novo", "bom", "regular", "ruim"],"perfil": ["admin", "solicitante"],"status_solicitacao": ["pendente", "aprovada", "retirada", "concluida", "cancelada", "recusada"],"status_usuario": ["pendente", "ativo", "inativo"],"tipo_movimentacao": ["ajuste", "reserva", "liberacao_reserva", "retirada", "devolucao"]
           }
         }
 } as const
