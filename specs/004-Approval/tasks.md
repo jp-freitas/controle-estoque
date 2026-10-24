@@ -11,12 +11,12 @@ Legenda: 🧪 teste primeiro · 🗄️ banco · 🖥️ front · 🔍 validaç�
 
 ## Fase 1 — Dados (RF-04, RF-08, RF-10)
 
-- [ ] **T-01** 🧪 pgTAP `004_schema.test.sql`: novas colunas em `solicitacao` e `solicitacao_item`; `check (0 <= aprovada <= solicitada)`; `check` de motivo na recusa.
-- [ ] **T-02** 🗄️ Migration `004_aprovacao`: colunas e constraints.
+- [x] **T-01** 🧪 pgTAP `004_schema.test.sql`: novas colunas em `solicitacao` e `solicitacao_item`; `check (0 <= aprovada <= solicitada)`; `check` de motivo na recusa.
+- [x] **T-02** 🗄️ Migration `004_aprovacao`: colunas e constraints.
 
 ## Fase 2 — Aprovar (RF-01 a RF-07, RF-09)
 
-- [ ] **T-03** 🧪 pgTAP `004_aprovar.test.sql`:
+- [x] **T-03** 🧪 pgTAP `004_aprovar.test.sql`:
   - **CA-01**: total 10, reservada 8, aprovar 5 → "estoque insuficiente", nada muda;
   - **CA-02**: 3 linhas, uma com aprovada 0 → `aprovada`, reservas e `movimentacao` `reserva` só para 2;
   - **CA-04**: solicitante (e admin pendente/inativo) → erro de permissão;
@@ -27,26 +27,26 @@ Legenda: 🧪 teste primeiro · 🗄️ banco · 🖥️ front · 🔍 validaç�
   - **CA-13**: solicitante inativado ou pendente depois do envio → rejeitado; recusa permitida;
   - payload sem todas as linhas → rejeitado; `aprovador_id`, `data_decisao`, `observacao_decisao` gravados;
   - nenhuma linha nova em `auditoria` (spec-006/CA-04).
-- [ ] **T-04** 🗄️ RPC `aprovar_solicitacao(id, itens, observacao)` com bloqueio solicitação → itens por `id` e `app.origem`.
-- [ ] **T-05** 🧪 Concorrência `supabase/tests/concorrencia/004-aprovacao.test.ts` — **CA-03**: duas sessões de admins diferentes aprovam, ao mesmo tempo, solicitações do mesmo item com estoque para uma; exatamente uma conclui, a outra falha, `reservada` correto e CHECK nunca violado. **RN-03**: professor cancela × admin aprova a mesma solicitação → sem reserva órfã.
+- [x] **T-04** 🗄️ RPC `aprovar_solicitacao(id, itens, observacao)` com bloqueio solicitação → itens por `id` e `app.origem`.
+- [x] **T-05** 🧪 Concorrência `supabase/tests/concorrencia/004-aprovacao.test.ts` — **CA-03**: duas sessões de admins diferentes aprovam, ao mesmo tempo, solicitações do mesmo item com estoque para uma; exatamente uma conclui, a outra falha, `reservada` correto e CHECK nunca violado. **RN-03**: professor cancela × admin aprova a mesma solicitação → sem reserva órfã.
 
 ## Fase 3 — Recusar e cancelar (RF-08, RF-10, RN-03)
 
-- [ ] **T-06** 🧪 pgTAP `004_recusar_cancelar.test.sql`:
+- [x] **T-06** 🧪 pgTAP `004_recusar_cancelar.test.sql`:
   - **CA-06**: recusa sem motivo → rejeitada; com motivo → `recusada`, estoque intacto;
   - **CA-08**: cancelar aprovada com reserva 3 → `reservada` volta, `movimentacao` `liberacao_reserva`;
   - cancelar solicitação não `aprovada` → rejeitado; caminho negado em ambas.
-- [ ] **T-07** 🗄️ RPCs `recusar_solicitacao(id, motivo)` e `cancelar_solicitacao_aprovada(id, motivo)`.
-- [ ] **T-08** 🧪 pgTAP `004_invariante.test.sql` — **RN-03**: após uma sequência de aprovações, cancelamentos e recusas, para cada item `quantidade_reservada` = soma de `quantidade_aprovada` das solicitações `aprovada`.
+- [x] **T-07** 🗄️ RPCs `recusar_solicitacao(id, motivo)` e `cancelar_solicitacao_aprovada(id, motivo)`.
+- [x] **T-08** 🧪 pgTAP `004_invariante.test.sql` — **RN-03**: após uma sequência de aprovações, cancelamentos e recusas, para cada item `quantidade_reservada` = soma de `quantidade_aprovada` das solicitações `aprovada`.
 
 ## Fase 4 — Leitura (RF-03, RF-11 a RF-13)
 
-- [ ] **T-09** 🧪 pgTAP `004_leitura.test.sql`:
+- [x] **T-09** 🧪 pgTAP `004_leitura.test.sql`:
   - fila em ordem de `criado_em`, com disponível atual (RF-03); solicitante não lê a fila;
   - **CA-11**: professor vê quantidade aprovada por linha e a observação;
   - **CA-12**: aprovada há 10 dias continua `aprovada`, reserva mantida, `dias_aguardando = 10`.
-- [ ] **T-10** 🗄️ Views `fila_aprovacao` e `aprovadas_aguardando_retirada`.
-- [ ] **T-11** 🔍 `supabase db reset` + `supabase test db` + `npm run test:db:concorrencia`; revisão de grants/`search_path`; `npm run db:types`.
+- [x] **T-10** 🗄️ Views `fila_aprovacao` e `aprovadas_aguardando_retirada`.
+- [x] **T-11** 🔍 `supabase db reset` + `supabase test db` + `npm run test:db:concorrencia`; revisão de grants/`search_path`; `npm run db:types`.
 
 ## Fase 5 — Front
 
