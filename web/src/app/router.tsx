@@ -10,8 +10,10 @@ import {
   RequerAtivo,
   RequerSessao,
 } from '@/features/auth'
+import { AdicionarAoCarrinho, CarrinhoPage } from '@/features/carrinho'
 import { CatalogoPage } from '@/features/catalogo'
 import { ItensPage, LocaisPage, TiposPage } from '@/features/itens-admin'
+import { MinhasSolicitacoesPage } from '@/features/solicitacoes'
 import { ConvitesPage, MeuPerfilPage, UsuariosPage } from '@/features/usuarios'
 import { RootLayout } from './RootLayout'
 
@@ -33,7 +35,12 @@ export const rotas: RouteObject[] = [
           {
             element: <RequerAtivo />,
             children: [
-              { index: true, element: <CatalogoPage /> },
+              {
+                index: true,
+                element: <CatalogoPage acaoItem={(item) => <AdicionarAoCarrinho item={item} />} />,
+              },
+              { path: 'carrinho', element: <CarrinhoPage /> },
+              { path: 'minhas-solicitacoes', element: <MinhasSolicitacoesPage /> },
               { path: 'meu-perfil', element: <MeuPerfilPage /> },
               {
                 path: 'admin',
