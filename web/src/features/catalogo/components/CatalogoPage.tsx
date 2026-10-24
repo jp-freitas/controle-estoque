@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useSessao } from '@/features/auth'
 import { erroRpc } from '@/shared/lib/erroRpc'
 import { Badge } from '@/shared/ui/badge'
@@ -14,8 +14,12 @@ import { ROTULO_ESTADO } from './rotulos'
 
 const TODOS = { valor: '', rotulo: 'Todos' }
 
-/** spec-002/RF-10, RF-11, CA-05, CA-10: catálogo com busca e filtros. */
-export function CatalogoPage() {
+/**
+ * spec-002/RF-10, RF-11, CA-05, CA-10: catálogo com busca e filtros.
+ * `acaoItem` deixa quem compõe a rota pôr um botão por item (o carrinho, spec 003)
+ * sem esta feature depender dele.
+ */
+export function CatalogoPage({ acaoItem }: { acaoItem?: (item: ItemCatalogo) => ReactNode }) {
   const { perfil } = useSessao()
   const ehAdmin = perfil?.perfil === 'admin'
   const catalogo = useCatalogo()
@@ -86,13 +90,19 @@ export function CatalogoPage() {
       ) : lista.length === 0 ? (
         <p className="text-muted-foreground">Nenhum item encontrado.</p>
       ) : (
-        <TabelaCatalogo itens={lista} />
+        <TabelaCatalogo itens={lista} acaoItem={acaoItem} />
       )}
     </div>
   )
 }
 
-function TabelaCatalogo({ itens }: { itens: ItemCatalogo[] }) {
+function TabelaCatalogo({
+  itens,
+  acaoItem,
+}: {
+  itens: ItemCatalogo[]
+  acaoItem?: (item: ItemCatalogo) => ReactNode
+}) {
   return (
     <Table>
       <TableHeader>
@@ -103,6 +113,11 @@ function TabelaCatalogo({ itens }: { itens: ItemCatalogo[] }) {
           <TableHead>Estado</TableHead>
           <TableHead className="text-right">Disponível</TableHead>
           <TableHead>Situação</TableHead>
+          {acaoItem && (
+            <TableHead>
+              <span className="sr-only">Ações</span>
+            </TableHead>
+          )}
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -127,6 +142,7 @@ function TabelaCatalogo({ itens }: { itens: ItemCatalogo[] }) {
               {!i.operante && <Badge variant="destructive">Inoperante</Badge>}
               {!i.ativo && <Badge variant="secondary">Desativado</Badge>}
             </TableCell>
+            {acaoItem && <TableCell>{acaoItem(i)}</TableCell>}
           </TableRow>
         ))}
       </TableBody>

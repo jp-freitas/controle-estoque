@@ -5,6 +5,6 @@ import { listarCatalogo } from '../api/catalogoApi'
 export const chaveCatalogo = ['catalogo'] as const
 
 /** Hook público do catálogo (spec-002/RF-10): também é o que o carrinho (spec 003) usa. */
-export function useCatalogo() {
-  return useQuery({ queryKey: chaveCatalogo, queryFn: listarCatalogo })
+export function useCatalogo({ enabled = true }: { enabled?: boolean } = {}) {
+  return useQuery({ queryKey: chaveCatalogo, queryFn: listarCatalogo, enabled })
 }

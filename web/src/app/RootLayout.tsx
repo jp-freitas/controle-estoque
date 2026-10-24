@@ -1,11 +1,29 @@
 import { NavLink, Outlet } from 'react-router'
 import { useSessao } from '@/features/auth'
+import { CarrinhoProvider, useCarrinho } from '@/features/carrinho'
 import { Button } from '@/shared/ui/button'
 
 const linkClasse = ({ isActive }: { isActive: boolean }) =>
   isActive ? 'font-medium underline' : 'text-muted-foreground hover:underline'
 
 export function RootLayout() {
+  return (
+    <CarrinhoProvider>
+      <Layout />
+    </CarrinhoProvider>
+  )
+}
+
+function LinkCarrinho() {
+  const { linhas } = useCarrinho()
+  return (
+    <NavLink to="/carrinho" className={linkClasse}>
+      Carrinho{linhas.length > 0 && ` (${linhas.length})`}
+    </NavLink>
+  )
+}
+
+function Layout() {
   const { perfil, sair } = useSessao()
   const ativo = perfil?.status === 'ativo'
 
@@ -17,6 +35,10 @@ export function RootLayout() {
           <nav aria-label="Principal" className="flex flex-wrap gap-4 text-sm">
             <NavLink to="/" end className={linkClasse}>
               Catálogo
+            </NavLink>
+            <LinkCarrinho />
+            <NavLink to="/minhas-solicitacoes" className={linkClasse}>
+              Minhas solicitações
             </NavLink>
             {perfil.perfil === 'admin' && (
               <>

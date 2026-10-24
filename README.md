@@ -51,6 +51,6 @@ Verificações do front (dentro de `web/`): `npm run lint`, `npm run format:chec
 
 ## Status
 
-Constituição e specs 001 a 007 com `spec.md`, `plan.md` e `tasks.md`. **Specs 001 (autenticação, convites e perfis) e 002 (catálogo: itens, tipos e locais) implementadas.** Próximas: 003 em diante.
+Constituição e specs 001 a 007 com `spec.md`, `plan.md` e `tasks.md`. **Specs 001 (autenticação, convites e perfis), 002 (catálogo: itens, tipos e locais) e 003 (carrinho e solicitação de retirada) implementadas.** Próximas: 004 em diante.
 
 Usuários do seed (só desenvolvimento local, senha `Senha!123`): `admin@escola.test` (admin ativo), `ativo@escola.test`, `pendente@escola.test`, `inativo@escola.test`. O seed também traz 3 locais e 7 itens de exemplo (um insumo no limite do estoque mínimo, um item inoperante e um desativado).
