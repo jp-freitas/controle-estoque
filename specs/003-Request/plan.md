@@ -54,3 +54,17 @@ Migration `003_solicitacao`.
 
 - pgTAP `003_*.test.sql`: CA-01 a CA-08 (CA-01 confere que nenhum contador mudou; CA-07 com dois solicitantes; CA-08 com pendente e inativo).
 - Vitest: reducer e persistência/revalidação do carrinho (CA-09).
+
+## Como foi implementado
+
+Migrations: `solicitacao`, `enviar_solicitacao`, `cancelar_solicitacao`.
+
+- **`enviar_solicitacao`:** lê a lista com `jsonb_to_record` e trata só erros de dados (classe 22) como "Lista de itens inválida." — um `when others` escondeu um bug na primeira versão. Item desativado ou inexistente vem no `detail` com `nome: null`, para não revelar o nome a quem não o vê.
+- **`cancelar_solicitacao`:** `for update` na solicitação do próprio usuário (prepara a concorrência com a aprovação da spec 004).
+- **Front:**
+  - `features/carrinho`: regras puras em `hooks/carrinho.ts` (`aplicar`, `revalidar`, `lerCarrinho`/`salvarCarrinho`). O provider guarda as linhas salvas e **deriva** as conferidas com `useMemo` a cada mudança do catálogo (sem efeito que mexa em estado); o que vai para o `localStorage` já é a versão conferida, para o aviso não se repetir a cada recarga. O provider fica no `RootLayout` (o menu mostra "Carrinho (n)"), com `key` por usuário.
+  - Erro de envio invalida o catálogo: o carrinho é reconferido e o motivo de cada item recusado aparece na linha ("Recusado: Disponível: 3.").
+  - `features/solicitacoes`: "Minhas solicitações" filtra por `solicitante_id` (o admin vê todas pela RLS). Decisão, motivo de recusa e quantidades aprovadas (RF-08) entram com as colunas da spec 004.
+  - `CatalogoPage` ganhou a prop `acaoItem`; `app/router` põe o `AdicionarAoCarrinho`.
+- **Testes:** pgTAP `003_solicitacao_schema` (20), `003_solicitacao_rls` (17), `003_enviar` (30), `003_cancelar` (14); Vitest do carrinho (9) e do fluxo pelas rotas reais (11); verificação no navegador (8 passos, inclusive o admin reduzindo o estoque com o item no carrinho do professor) e T-13 pela API REST (44 tentativas indevidas, todas negadas).
+

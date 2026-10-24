@@ -38,14 +38,14 @@ Legenda: 🧪 teste primeiro · 🗄️ banco · 🖥️ front · 🔍 validaç�
 
 ## Fase 3 — Front (RF-02, RF-04, RF-08, RF-09)
 
-- [ ] **T-09** 🖥️ **RF-02, RF-03**: `features/carrinho/` — Context + `useReducer`; testes Vitest do reducer (adicionar, alterar, remover, item não repete).
-- [ ] **T-10** 🖥️ **CA-09**: persistência em `localStorage` (`estoque:carrinho:<user_id>`, `try/catch`) e revalidação contra `useCatalogo` ao carregar (remove desativado, marca inoperante, reduz acima do disponível, avisa). Testes Vitest com `localStorage` falso.
-- [ ] **T-11** 🖥️ **RF-04, RF-05, RF-06, RF-07**: tela do carrinho com justificativa (Zod), envio, erros por item do `detail` na linha correspondente; limpa o carrinho após sucesso.
-- [ ] **T-12** 🖥️ **RF-08, RF-09**: `features/solicitacoes/` — "Minhas solicitações" (status, data, itens), detalhe, botão cancelar só em `pendente`.
+- [x] **T-09** 🖥️ **RF-02, RF-03**: `features/carrinho/` — Context + `useReducer`; testes Vitest do reducer (adicionar, alterar, remover, item não repete).
+- [x] **T-10** 🖥️ **CA-09**: persistência em `localStorage` (`estoque:carrinho:<user_id>`, `try/catch`) e revalidação contra `useCatalogo` ao carregar (remove desativado, marca inoperante, reduz acima do disponível, avisa). Testes Vitest com `localStorage` falso.
+- [x] **T-11** 🖥️ **RF-04, RF-05, RF-06, RF-07**: tela do carrinho com justificativa (Zod), envio, erros por item do `detail` na linha correspondente; limpa o carrinho após sucesso.
+- [x] **T-12** 🖥️ **RF-08, RF-09**: `features/solicitacoes/` — "Minhas solicitações" (status, data, itens), detalhe, botão cancelar só em `pendente`.
 
 ## Fase 4 — Fechamento
 
-- [ ] **T-13** 🔍 Teste manual com token de solicitante: ler solicitações de outro usuário e chamar `insert` direto em `solicitacao` pela API REST (CA-07).
+- [x] **T-13** 🔍 Teste manual com token de solicitante: ler solicitações de outro usuário e chamar `insert` direto em `solicitacao` pela API REST (CA-07).
 - [ ] **T-14** 🔍 CI verde.
 - [ ] **T-15** 📝 Atualizar `spec.md`/`plan.md` e abrir PR `spec-003-solicitacao`.
 
