@@ -11,16 +11,16 @@ Legenda: 🧪 teste primeiro · 🗄️ banco · 🖥️ front · 🔍 validaç�
 
 ## Fase 1 — Dados e RLS (RF-01, RF-03, RF-10, RF-11)
 
-- [ ] **T-01** 🧪 pgTAP `003_solicitacao_schema.test.sql`: enum `status_solicitacao`, tabelas, `unique (solicitacao_id, item_id)`, `check` de justificativa e quantidade, FK `movimentacao.solicitacao_id`, RLS habilitado.
-- [ ] **T-02** 🧪 pgTAP `003_solicitacao_rls.test.sql`:
+- [x] **T-01** 🧪 pgTAP `003_solicitacao_schema.test.sql`: enum `status_solicitacao`, tabelas, `unique (solicitacao_id, item_id)`, `check` de justificativa e quantidade, FK `movimentacao.solicitacao_id`, RLS habilitado.
+- [x] **T-02** 🧪 pgTAP `003_solicitacao_rls.test.sql`:
   - **CA-07**: professor A não lê solicitação nem linhas do professor B (inclusive API direta);
   - admin lê todas (RF-10);
   - `insert`/`update`/`delete` direto negados para todos (RF-11).
-- [ ] **T-03** 🗄️ Migration `003_solicitacao`: enum, `solicitacao`, `solicitacao_item`, FK em `movimentacao`, índices, RLS.
+- [x] **T-03** 🗄️ Migration `003_solicitacao`: enum, `solicitacao`, `solicitacao_item`, FK em `movimentacao`, índices, RLS.
 
 ## Fase 2 — RPCs (RF-05 a RF-07, RF-09)
 
-- [ ] **T-04** 🧪 pgTAP `003_enviar.test.sql`:
+- [x] **T-04** 🧪 pgTAP `003_enviar.test.sql`:
   - **CA-01**: 2 itens disponíveis → `pendente` com 2 linhas; nenhum contador muda;
   - **CA-02**: disponível 2, pede 3 → rejeitado, nada criado;
   - **CA-03**: item inoperante → rejeitado, `detail` identifica o item;
@@ -28,13 +28,13 @@ Legenda: 🧪 teste primeiro · 🗄️ banco · 🖥️ front · 🔍 validaç�
   - **CA-08**: pendente e inativo → negado;
   - RF-07: dois itens inválidos → `detail` lista os dois; item repetido no payload → rejeitado; item desativado → rejeitado;
   - solicitação sempre em nome de `auth.uid()` (RF-01).
-- [ ] **T-05** 🗄️ RPC `enviar_solicitacao(itens, justificativa)`.
-- [ ] **T-06** 🧪 pgTAP `003_cancelar.test.sql`:
+- [x] **T-05** 🗄️ RPC `enviar_solicitacao(itens, justificativa)`.
+- [x] **T-06** 🧪 pgTAP `003_cancelar.test.sql`:
   - **CA-05**: dono cancela `pendente` → `cancelada`, nenhum contador muda;
   - **CA-06**: `aprovada` (ou posterior) → negado pelo fluxo do solicitante (montar o estado direto no teste, já que a 004 ainda não existe);
   - outro usuário cancelando → negado.
-- [ ] **T-07** 🗄️ RPC `cancelar_solicitacao(id)`.
-- [ ] **T-08** 🔍 `supabase db reset` + `supabase test db`; revisão de `search_path`, grants e RLS; `npm run db:types`.
+- [x] **T-07** 🗄️ RPC `cancelar_solicitacao(id)`.
+- [x] **T-08** 🔍 `supabase db reset` + `supabase test db`; revisão de `search_path`, grants e RLS; `npm run db:types`.
 
 ## Fase 3 — Front (RF-02, RF-04, RF-08, RF-09)
 

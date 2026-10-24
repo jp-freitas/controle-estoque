@@ -14,7 +14,7 @@ declare
   v_justificativa text := btrim(p_justificativa);
   v_ids           uuid[];
   v_qtds          integer[];
-  v_falhas        jsonb := '[]';
+  v_falhas        jsonb := '[]'::jsonb;
   v_item          public.item;
   v_linha         record;
   v_disponivel    integer;
