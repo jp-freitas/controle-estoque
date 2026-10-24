@@ -58,8 +58,8 @@ Legenda: 🧪 teste primeiro · 🗄️ banco · 🖥️ front · 🔍 validaç�
 ## Fase 6 — Fechamento
 
 - [x] **T-16** 🔍 Teste manual com token de solicitante chamando `aprovar_solicitacao` e lendo `fila_aprovacao` pela API REST (CA-04).
-- [ ] **T-17** 🔍 CI verde, incluindo a suíte de concorrência.
-- [ ] **T-18** 📝 Atualizar `spec.md`/`plan.md` e abrir PR `spec-004-aprovacao`.
+- [x] **T-17** 🔍 CI verde, incluindo a suíte de concorrência.
+- [x] **T-18** 📝 Atualizar `spec.md`/`plan.md` e abrir PR `spec-004-aprovacao`.
 
 ---
 
