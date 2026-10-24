@@ -103,3 +103,24 @@ export async function esperarBloqueio(sistema: pg.Client, pid: number, prazoMs =
   }
   throw new Error(`Sessão ${pid} não ficou bloqueada em ${prazoMs} ms`)
 }
+
+/**
+ * Apaga dados de teste que tocaram tabelas imutáveis (movimentacao, P-05). Só para
+ * limpeza de teste: `session_replication_role = replica` desliga os triggers apenas
+ * nesta transação da conexão de sistema — FKs inclusive, então apague tudo o que
+ * está ligado. A aplicação nunca usa esta conexão.
+ */
+export async function limparComTriggersDesligados(
+  sistema: pg.Client,
+  comandos: [sql: string, params?: unknown[]][],
+): Promise<void> {
+  await sistema.query('begin')
+  try {
+    await sistema.query('set local session_replication_role = replica')
+    for (const [sql, params] of comandos) await sistema.query(sql, params)
+    await sistema.query('commit')
+  } catch (e) {
+    await sistema.query('rollback')
+    throw e
+  }
+}

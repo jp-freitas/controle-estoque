@@ -42,6 +42,9 @@ function Layout() {
             </NavLink>
             {perfil.perfil === 'admin' && (
               <>
+                <NavLink to="/admin/aprovacoes" className={linkClasse}>
+                  Aprovações
+                </NavLink>
                 <NavLink to="/admin/itens" className={linkClasse}>
                   Itens
                 </NavLink>

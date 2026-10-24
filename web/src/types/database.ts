@@ -125,6 +125,18 @@ isOneToOne: false
       foreignKeyName: "movimentacao_solicitacao_id_fkey"
       columns: ["solicitacao_id"]
 isOneToOne: false
+      referencedRelation: "aprovadas_aguardando_retirada"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "movimentacao_solicitacao_id_fkey"
+      columns: ["solicitacao_id"]
+isOneToOne: false
+      referencedRelation: "fila_aprovacao"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "movimentacao_solicitacao_id_fkey"
+      columns: ["solicitacao_id"]
+isOneToOne: false
       referencedRelation: "solicitacao"
       referencedColumns: ["id"]
     },{
@@ -151,17 +163,29 @@ isOneToOne: false
                   ]
                 },"solicitacao": {
                   Row: {
-                    "cancelado_em": string | null,"criado_em": string,"id": string,"justificativa": string,"solicitante_id": string,"status": Database["public"]['Enums']["status_solicitacao"]
+                    "aprovador_id": string | null,"cancelado_em": string | null,"cancelado_por_id": string | null,"criado_em": string,"data_decisao": string | null,"id": string,"justificativa": string,"motivo_cancelamento": string | null,"motivo_recusa": string | null,"observacao_decisao": string | null,"solicitante_id": string,"status": Database["public"]['Enums']["status_solicitacao"]
                   }
                   ComputedFields: never
                   Insert: {
-                    "cancelado_em"?: string | null,"criado_em"?: string,"id"?: string,"justificativa": string,"solicitante_id": string,"status"?: Database["public"]['Enums']["status_solicitacao"]
+                    "aprovador_id"?: string | null,"cancelado_em"?: string | null,"cancelado_por_id"?: string | null,"criado_em"?: string,"data_decisao"?: string | null,"id"?: string,"justificativa": string,"motivo_cancelamento"?: string | null,"motivo_recusa"?: string | null,"observacao_decisao"?: string | null,"solicitante_id": string,"status"?: Database["public"]['Enums']["status_solicitacao"]
                   }
                   Update: {
-                    "cancelado_em"?: string | null,"criado_em"?: string,"id"?: string,"justificativa"?: string,"solicitante_id"?: string,"status"?: Database["public"]['Enums']["status_solicitacao"]
+                    "aprovador_id"?: string | null,"cancelado_em"?: string | null,"cancelado_por_id"?: string | null,"criado_em"?: string,"data_decisao"?: string | null,"id"?: string,"justificativa"?: string,"motivo_cancelamento"?: string | null,"motivo_recusa"?: string | null,"observacao_decisao"?: string | null,"solicitante_id"?: string,"status"?: Database["public"]['Enums']["status_solicitacao"]
                   }
                   Relationships: [
                     {
+      foreignKeyName: "solicitacao_aprovador_id_fkey"
+      columns: ["aprovador_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "solicitacao_cancelado_por_id_fkey"
+      columns: ["cancelado_por_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "solicitacao_solicitante_id_fkey"
       columns: ["solicitante_id"]
 isOneToOne: false
@@ -171,14 +195,14 @@ isOneToOne: false
                   ]
                 },"solicitacao_item": {
                   Row: {
-                    "id": string,"item_id": string,"item_nome": string,"quantidade_solicitada": number,"solicitacao_id": string
+                    "id": string,"item_id": string,"item_nome": string,"quantidade_aprovada": number | null,"quantidade_solicitada": number,"solicitacao_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "id"?: string,"item_id": string,"item_nome": string,"quantidade_solicitada": number,"solicitacao_id": string
+                    "id"?: string,"item_id": string,"item_nome": string,"quantidade_aprovada"?: number | null,"quantidade_solicitada": number,"solicitacao_id": string
                   }
                   Update: {
-                    "id"?: string,"item_id"?: string,"item_nome"?: string,"quantidade_solicitada"?: number,"solicitacao_id"?: string
+                    "id"?: string,"item_id"?: string,"item_nome"?: string,"quantidade_aprovada"?: number | null,"quantidade_solicitada"?: number,"solicitacao_id"?: string
                   }
                   Relationships: [
                     {
@@ -192,6 +216,18 @@ isOneToOne: false
       columns: ["item_id"]
 isOneToOne: false
       referencedRelation: "item"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "solicitacao_item_solicitacao_id_fkey"
+      columns: ["solicitacao_id"]
+isOneToOne: false
+      referencedRelation: "aprovadas_aguardando_retirada"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "solicitacao_item_solicitacao_id_fkey"
+      columns: ["solicitacao_id"]
+isOneToOne: false
+      referencedRelation: "fila_aprovacao"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "solicitacao_item_solicitacao_id_fkey"
@@ -218,7 +254,21 @@ isOneToOne: false
                 }
           }
           Views: {
-            "catalogo": {
+            "aprovadas_aguardando_retirada": {
+                  Row: {
+                    "aprovador_nome": string | null,"criado_em": string | null,"data_decisao": string | null,"dias_aguardando": number | null,"id": string | null,"itens": Json | null,"justificativa": string | null,"observacao_decisao": string | null,"solicitante_id": string | null,"solicitante_nome": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "solicitacao_solicitante_id_fkey"
+      columns: ["solicitante_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"catalogo": {
                   Row: {
                     "ativo": boolean | null,"atualizado_em": string | null,"consumivel": boolean | null,"descricao": string | null,"disponivel": number | null,"estado": Database["public"]['Enums']["estado_item"] | null,"estoque_minimo": number | null,"id": string | null,"local_id": string | null,"local_nome": string | null,"nome": string | null,"numero_patrimonio": string | null,"operante": boolean | null,"quantidade_em_uso": number | null,"quantidade_reservada": number | null,"quantidade_total": number | null,"tipo_id": string | null,"tipo_nome": string | null
                   }
@@ -253,6 +303,20 @@ isOneToOne: false
                     {
       foreignKeyName: "convite_convidado_por_fkey"
       columns: ["convidado_por"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"fila_aprovacao": {
+                  Row: {
+                    "criado_em": string | null,"id": string | null,"itens": Json | null,"justificativa": string | null,"solicitante_id": string | null,"solicitante_nome": string | null,"solicitante_status": Database["public"]['Enums']["status_usuario"] | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "solicitacao_solicitante_id_fkey"
+      columns: ["solicitante_id"]
 isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
@@ -377,6 +441,27 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"aprovar_solicitacao":
+{ Args: { "p_id": string,"p_itens": Json,"p_observacao"?: string }; Returns: {
+              "aprovador_id": string | null,
+"cancelado_em": string | null,
+"cancelado_por_id": string | null,
+"criado_em": string,
+"data_decisao": string | null,
+"id": string,
+"justificativa": string,
+"motivo_cancelamento": string | null,
+"motivo_recusa": string | null,
+"observacao_decisao": string | null,
+"solicitante_id": string,
+"status": Database["public"]['Enums']["status_solicitacao"]
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "solicitacao"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "atualizar_meu_perfil":
 { Args: { "p_matricula": string,"p_nome": string }; Returns: {
               "atualizado_em": string,
@@ -432,10 +517,37 @@ isOneToOne: false
       } },
 "cancelar_solicitacao":
 { Args: { "p_id": string }; Returns: {
-              "cancelado_em": string | null,
+              "aprovador_id": string | null,
+"cancelado_em": string | null,
+"cancelado_por_id": string | null,
 "criado_em": string,
+"data_decisao": string | null,
 "id": string,
 "justificativa": string,
+"motivo_cancelamento": string | null,
+"motivo_recusa": string | null,
+"observacao_decisao": string | null,
+"solicitante_id": string,
+"status": Database["public"]['Enums']["status_solicitacao"]
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "solicitacao"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"cancelar_solicitacao_aprovada":
+{ Args: { "p_id": string,"p_motivo": string }; Returns: {
+              "aprovador_id": string | null,
+"cancelado_em": string | null,
+"cancelado_por_id": string | null,
+"criado_em": string,
+"data_decisao": string | null,
+"id": string,
+"justificativa": string,
+"motivo_cancelamento": string | null,
+"motivo_recusa": string | null,
+"observacao_decisao": string | null,
 "solicitante_id": string,
 "status": Database["public"]['Enums']["status_solicitacao"]
             }
@@ -493,6 +605,27 @@ isOneToOne: false
                           SetofOptions: {
         from: "*"
         to: "profiles"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"recusar_solicitacao":
+{ Args: { "p_id": string,"p_motivo": string }; Returns: {
+              "aprovador_id": string | null,
+"cancelado_em": string | null,
+"cancelado_por_id": string | null,
+"criado_em": string,
+"data_decisao": string | null,
+"id": string,
+"justificativa": string,
+"motivo_cancelamento": string | null,
+"motivo_recusa": string | null,
+"observacao_decisao": string | null,
+"solicitante_id": string,
+"status": Database["public"]['Enums']["status_solicitacao"]
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "solicitacao"
         isOneToOne: true
         isSetofReturn: false
       } },

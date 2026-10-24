@@ -10,6 +10,8 @@ export function useMinhasSolicitacoes() {
     queryKey: [...chaveMinhasSolicitacoes, perfil?.id],
     queryFn: () => listarMinhasSolicitacoes(perfil!.id),
     enabled: !!perfil,
+    // o status muda pela ação do admin (spec-004/RF-12): busca de novo ao abrir a tela
+    staleTime: 0,
   })
 }
 

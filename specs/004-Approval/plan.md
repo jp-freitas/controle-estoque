@@ -20,7 +20,7 @@ Todas `SECURITY DEFINER`, `search_path` fixo, `eh_admin_ativo()` no início (RF-
 `itens` = `[{"solicitacao_item_id", "quantidade_aprovada"}]`.
 
 1. `select … from solicitacao where id = $1 for update` — serializa decisões sobre a mesma solicitação (CA-07).
-2. Valida `status = 'pendente'` (RF-09), `solicitante_id <> auth.uid()` (RF-02, CA-05), que **todas** as linhas da solicitação vieram no payload, e soma aprovada > 0 (RF-05, CA-10: "Nada aprovado — use Recusar").
+2. Valida `status = 'pendente'` (RF-09), `solicitante_id <> auth.uid()` (RF-02, CA-05), solicitante ainda `ativo` (RF-14, CA-13), que **todas** as linhas da solicitação vieram no payload, e soma aprovada > 0 (RF-05, CA-10: "Nada aprovado — use Recusar").
 3. `select … from item where id = any(…) order by id for update` — ordem fixa evita deadlock entre aprovações concorrentes (P-04, RN-02).
 4. Para cada linha com aprovada > 0: item ativo e operante (RF-07, CA-09) e `disponivel >= aprovada` (RF-06, CA-01). Falhas acumuladas → `raise` com `detail` por item; nada muda.
 5. `update item set quantidade_reservada += aprovada`; `movimentacao` tipo `reserva` por linha com aprovada > 0 (RF-04).
@@ -36,7 +36,7 @@ Trava a solicitação e depois os itens em ordem de `id`; só `aprovada` (sem re
 
 ## Leitura
 
-- View `fila_aprovacao` (`security_invoker`, admin): solicitações `pendente` ordenadas por `criado_em` (mais antigas primeiro), solicitante, justificativa, linhas com quantidade solicitada e **disponível atual** de cada item (RF-03).
+- View `fila_aprovacao` (`security_invoker`, admin): solicitações `pendente` ordenadas por `criado_em` (mais antigas primeiro), solicitante (nome e status, para sinalizar RF-14), justificativa, linhas com quantidade solicitada e **disponível atual** e operância de cada item (RF-03).
 - View `aprovadas_aguardando_retirada` (admin): `aprovada`, com `dias_aguardando = current_date − data_decisao::date` (RF-13, CA-12). Sem job de expiração (OPEN-02). Também alimenta o card "aprovadas aguardando retirada" do painel (spec-007/RF-02).
 - O professor vê `quantidade_aprovada` e `observacao_decisao` pelo próprio `select` em `solicitacao`/`solicitacao_item` (RF-11, RF-12, CA-11); a RLS da 003 já cobre.
 - Sem aviso ao professor (OPEN-03): ele vê o status em "Minhas solicitações".
@@ -49,4 +49,17 @@ Trava a solicitação e depois os itens em ordem de `id`; só `aprovada` (sem re
 
 - pgTAP `004_*.test.sql`: CA-01, CA-02, CA-04 a CA-12, com caminho negado (solicitante, admin pendente/inativo).
 - pgTAP de invariante (RN-03): para cada item, `quantidade_reservada` = soma de `quantidade_aprovada` das solicitações `aprovada` — rodado ao fim de cada cenário.
-- Concorrência (`supabase/tests/concorrencia/`): **CA-03** — duas sessões aprovando solicitações do mesmo item com estoque para uma; exatamente uma conclui, sem reserva dupla.
+- Concorrência (`supabase/tests/concorrencia/`): **CA-03** — duas sessões aprovando solicitações do mesmo item com estoque para uma; exatamente uma conclui, sem reserva dupla. Também **RN-03**: o professor cancelando (spec 003) enquanto o admin aprova a mesma solicitação — as duas RPCs travam a `solicitacao`, então uma espera a outra e nunca sobra reserva de solicitação cancelada.
+
+## Como foi implementado
+
+Migrations: `aprovacao_colunas`, `aprovar_solicitacao`, `recusar_cancelar_aprovada`, `aprovacao_views`.
+
+- **`aprovar_solicitacao`:** ordem das checagens — permissão, trava da solicitação, status, própria, solicitante ativo (RF-14), payload (todas as linhas, uma vez cada, 0 ≤ aprovada ≤ solicitada, soma > 0) e, com os itens travados em ordem de `id`, revalidação por item. Erros por item no `detail` ("Estoque insuficiente: disponível 2.", "Item inoperante.", "Item desativado."). `app.origem` é ligado só em volta do `update` dos contadores.
+- **Cancelar aprovada** grava o motivo também na `movimentacao` `liberacao_reserva`.
+- **Views** devolvem uma linha por solicitação com os itens em `jsonb` e filtram `eh_admin_ativo()` (o professor não vê nem as próprias pendentes na fila).
+- **Concorrência** (`concorrencia/004_aprovacao.test.ts`): CA-03 e as duas ordens de "professor cancela × admin aprova". **Validado por mutação**: sem o `for update` nos itens, a segunda aprovação só para no CHECK de estoque. A limpeza usa `limparComTriggersDesligados` (helper de teste; `movimentacao` é imutável).
+- **Front** (`features/aprovacao`): abas Pendentes e Aguardando retirada; quantidade sugerida = `min(solicitada, disponível)` (0 para inoperante/desativado); recusar e cancelar pelo `ConfirmarComMotivo` (`shared/ui`). "Minhas solicitações" mostra quantidade aprovada, observação, motivo da recusa e do cancelamento.
+- **Achados no navegador:** (1) o hook esperava o recarregamento da fila antes do `onSuccess` do clique; o cartão decidido saía da tela e a mensagem se perdia — agora o recarregamento não é esperado; (2) "Minhas solicitações", fila e aguardando usam `staleTime: 0`, porque mudam pela ação de outra pessoa.
+- **Testes:** pgTAP `004_schema` (13), `004_aprovar` (41), `004_recusar_cancelar` (28), `004_invariante` (4), `004_leitura` (19); concorrência 3; Vitest 11 (`app/fluxoAprovacao.test.tsx`); navegador 7 passos; T-16: 40 tentativas indevidas pela API REST, todas negadas.
+

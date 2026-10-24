@@ -96,11 +96,44 @@ function CartaoSolicitacao({
           {s.solicitacao_item.map((l) => (
             <li key={l.id}>
               {l.quantidade_solicitada} × {l.item_nome}
+              {/* spec-004/RF-11, CA-11: quantidade aprovada por item */}
+              {l.quantidade_aprovada !== null && (
+                <span
+                  className={l.quantidade_aprovada < l.quantidade_solicitada ? 'font-medium' : ''}
+                >
+                  {' '}
+                  —{' '}
+                  {l.quantidade_aprovada === 0
+                    ? 'não aprovado'
+                    : `${l.quantidade_aprovada} aprovado(s)`}
+                </span>
+              )}
             </li>
           ))}
         </ul>
+        {s.data_decisao && s.status !== 'recusada' && (
+          <p className="text-muted-foreground">Aprovada em {formatarDataHora(s.data_decisao)}.</p>
+        )}
+        {s.observacao_decisao && (
+          <p>
+            <span className="text-muted-foreground">Observação da aprovação: </span>
+            {s.observacao_decisao}
+          </p>
+        )}
+        {s.status === 'recusada' && s.motivo_recusa && (
+          <p>
+            <span className="text-muted-foreground">Motivo da recusa: </span>
+            {s.motivo_recusa}
+          </p>
+        )}
         {s.cancelado_em && (
           <p className="text-muted-foreground">Cancelada em {formatarDataHora(s.cancelado_em)}.</p>
+        )}
+        {s.motivo_cancelamento && (
+          <p>
+            <span className="text-muted-foreground">Motivo do cancelamento: </span>
+            {s.motivo_cancelamento}
+          </p>
         )}
       </CardContent>
     </Card>

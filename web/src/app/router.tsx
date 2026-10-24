@@ -10,6 +10,7 @@ import {
   RequerAtivo,
   RequerSessao,
 } from '@/features/auth'
+import { AprovacoesPage } from '@/features/aprovacao'
 import { AdicionarAoCarrinho, CarrinhoPage } from '@/features/carrinho'
 import { CatalogoPage } from '@/features/catalogo'
 import { ItensPage, LocaisPage, TiposPage } from '@/features/itens-admin'
@@ -46,6 +47,7 @@ export const rotas: RouteObject[] = [
                 path: 'admin',
                 element: <RequerAdmin />,
                 children: [
+                  { path: 'aprovacoes', element: <AprovacoesPage /> },
                   { path: 'itens', element: <ItensPage /> },
                   { path: 'tipos', element: <TiposPage /> },
                   { path: 'locais', element: <LocaisPage /> },

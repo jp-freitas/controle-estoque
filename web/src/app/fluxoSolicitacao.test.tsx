@@ -165,6 +165,12 @@ describe('T-12 / RF-08, RF-09: minhas solicitações', () => {
     justificativa: 'Aula de física',
     criado_em: '2026-10-24T13:00:00Z',
     cancelado_em: null,
+    aprovador_id: null,
+    data_decisao: null,
+    observacao_decisao: null,
+    motivo_recusa: null,
+    cancelado_por_id: null,
+    motivo_cancelamento: null,
     solicitacao_item: [
       {
         id: 'l1',
@@ -172,6 +178,7 @@ describe('T-12 / RF-08, RF-09: minhas solicitações', () => {
         item_id: 'regua',
         item_nome: 'Régua',
         quantidade_solicitada: 2,
+        quantidade_aprovada: null,
       },
     ],
     ...dados,
